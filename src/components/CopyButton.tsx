@@ -55,7 +55,7 @@ export const CopyButton = ({
             <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:animate-shimmer"></span>
             {copied ? (
               <>
-                <Check className={`${compact ? "h-4 w-4" : "h-3.5 w-3.5"} text-white`} />
+                <Check className={`${compact ? "h-4 w-4" : "h-3.5 w-3.5"} animate-pulse-slow text-white`} />
                 {showText && !compact && 'Copied!'}
               </>
             ) : (

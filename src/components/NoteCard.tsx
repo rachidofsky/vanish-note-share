@@ -30,9 +30,10 @@ export const NoteCard = ({ id }: NoteCardProps) => {
         }
         
         // If note exists and hasn't been viewed yet
+        setNote(foundNote);
+        
+        // Only mark as viewed if not previously viewed
         if (!foundNote.viewed) {
-          setNote(foundNote);
-          
           // Mark as viewed
           foundNote.viewed = true;
           notes[id] = foundNote;
@@ -56,9 +57,10 @@ export const NoteCard = ({ id }: NoteCardProps) => {
               return prev - 1;
             });
           }, 1000);
-          
         } else {
-          setError('This note has already been viewed and is no longer available.');
+          // If already viewed but still in storage (during countdown period),
+          // we still show it but with proper message
+          setCountdown(0);
         }
       } catch (err) {
         setError('An error occurred while retrieving the note.');
@@ -105,7 +107,9 @@ export const NoteCard = ({ id }: NoteCardProps) => {
       <CardHeader className="pb-2">
         <CardTitle>Secure Note</CardTitle>
         <CardDescription>
-          This note will self-destruct in {countdown} seconds
+          {countdown > 0 
+            ? `This note will self-destruct in ${countdown} seconds` 
+            : "This note has been viewed and will be deleted soon"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

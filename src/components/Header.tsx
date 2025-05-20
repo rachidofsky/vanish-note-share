@@ -28,7 +28,7 @@ export const Header = () => {
     <header className="w-full py-6 px-6 sm:px-8 backdrop-blur-md bg-background/80 sticky top-0 z-50 border-b border-border">
       <div className="container mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/30 animate-float">
+          <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-gradient-to-r from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-500/30 animate-float">
             <LockIcon className="w-5 h-5" />
           </div>
           <h1 className="text-2xl font-bold font-display text-gradient">OneTimeNote</h1>
@@ -65,7 +65,7 @@ export const Header = () => {
             <Button 
               variant="outline" 
               size="sm" 
-              className="ml-2 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white border-0"
+              className="ml-2 bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white border-0"
               onClick={openAuthModal}
             >
               Sign In
@@ -124,7 +124,7 @@ export const Header = () => {
                 setMobileMenuOpen(false);
                 openAuthModal();
               }}
-              className="justify-start px-4 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white border-0"
+              className="justify-start px-4 bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white border-0"
             >
               Sign In
             </Button>

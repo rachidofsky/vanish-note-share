@@ -7,7 +7,7 @@ import { SecurityBadge } from '@/components/SecurityBadge';
 
 const MainLayout = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-background bg-gradient-mesh">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1 flex flex-col w-full py-8 sm:py-12 px-4 relative z-10">
         <div className="absolute inset-0 bg-security-pattern opacity-30 z-0 pointer-events-none"></div>

@@ -13,10 +13,10 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #9b87f5);
+  filter: drop-shadow(0 0 2em #0EA5E9);
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em #10B981);
 }
 
 @keyframes logo-spin {
@@ -42,7 +42,7 @@
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 20px 25px -5px rgba(155, 135, 245, 0.1), 0 10px 10px -5px rgba(155, 135, 245, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(14, 165, 233, 0.1), 0 10px 10px -5px rgba(16, 185, 129, 0.04);
 }
 
 .read-the-docs {
@@ -57,7 +57,7 @@
 }
 
 .animated-gradient {
-  background: linear-gradient(-45deg, #9b87f5, #D946EF, #33C3F0, #8B5CF6);
+  background: linear-gradient(-45deg, #0EA5E9, #10B981, #33C3F0, #10B981);
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
 }
@@ -75,12 +75,12 @@
 }
 
 .text-outline {
-  -webkit-text-stroke: 1px rgba(155, 135, 245, 0.5);
+  -webkit-text-stroke: 1px rgba(14, 165, 233, 0.5);
   color: transparent;
 }
 
 .shadow-neon {
-  box-shadow: 0 0 5px rgba(155, 135, 245, 0.5), 
-              0 0 20px rgba(155, 135, 245, 0.3), 
-              0 0 40px rgba(155, 135, 245, 0.1);
+  box-shadow: 0 0 5px rgba(14, 165, 233, 0.5), 
+              0 0 20px rgba(14, 165, 233, 0.3), 
+              0 0 40px rgba(14, 165, 233, 0.1);
 }

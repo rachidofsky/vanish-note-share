@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CopyButton } from '@/components/CopyButton';
 import { toast } from 'sonner';
+import { AdUnit } from '@/components/AdUnit';
 
 const CreatedPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -79,6 +80,11 @@ const CreatedPage = () => {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Ad placement below the card */}
+      <div className="w-full mt-8">
+        <AdUnit adSlot="1234567890" className="mx-auto" />
+      </div>
     </div>
   );
 };

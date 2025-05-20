@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/CopyButton';
-import { Check, Lock, Clock, AlertTriangle, Mail, MessageSquare, Loader2 } from 'lucide-react';
+import { Check, Lock, Clock, AlertTriangle, Mail, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { AdUnit } from '@/components/AdUnit';
 import { toast } from 'sonner';
@@ -25,11 +25,8 @@ const CreatedPage = () => {
   const [noteDetails, setNoteDetails] = useState<any>(null);
   const shareUrl = `${window.location.origin}/note/${id}`;
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
-  const [textDialogOpen, setTextDialogOpen] = useState(false);
   const [emailInput, setEmailInput] = useState('');
-  const [phoneInput, setPhoneInput] = useState('');
   const [isEmailSending, setIsEmailSending] = useState(false);
-  const [isTextSending, setIsTextSending] = useState(false);
   const { user } = useAuth();
   
   useEffect(() => {
@@ -94,41 +91,6 @@ const CreatedPage = () => {
     }
   };
   
-  const handleSendText = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsTextSending(true);
-    
-    try {
-      // Call the Supabase Edge Function to send SMS
-      const { data, error } = await supabase.functions.invoke('send-note-sms', {
-        body: {
-          phoneNumber: phoneInput,
-          noteLink: shareUrl
-        }
-      });
-      
-      if (error) {
-        console.error('Error sending text:', error);
-        toast.error('Failed to send text message', {
-          description: error.message || 'Please try again later.'
-        });
-      } else {
-        toast.success(`Link sent to ${phoneInput}`, {
-          description: "The secure note link has been texted successfully."
-        });
-        setTextDialogOpen(false);
-        setPhoneInput('');
-      }
-    } catch (err: any) {
-      console.error('Exception sending text:', err);
-      toast.error('Failed to send text message', {
-        description: err.message || 'Please try again later.'
-      });
-    } finally {
-      setIsTextSending(false);
-    }
-  };
-  
   return (
     <div className="flex flex-col items-center mx-auto p-4 w-full max-w-2xl">
       <Card className="w-full shadow-lg shadow-primary/10 border-primary/20 backdrop-blur-md bg-card/80">
@@ -181,21 +143,12 @@ const CreatedPage = () => {
               <Link to="/">Create another note</Link>
             </Button>
             
-            <div className="flex flex-col sm:flex-row gap-3 w-full">
-              <Button 
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
-                onClick={() => setEmailDialogOpen(true)}
-              >
-                <Mail className="mr-2 h-4 w-4" /> Send via Email
-              </Button>
-              
-              <Button 
-                className="w-full bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
-                onClick={() => setTextDialogOpen(true)}
-              >
-                <MessageSquare className="mr-2 h-4 w-4" /> Send via Text
-              </Button>
-            </div>
+            <Button 
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+              onClick={() => setEmailDialogOpen(true)}
+            >
+              <Mail className="mr-2 h-4 w-4" /> Send via Email
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -237,56 +190,6 @@ const CreatedPage = () => {
                 disabled={!emailInput || isEmailSending}
               >
                 {isEmailSending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  'Send Link'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Text Message Dialog */}
-      <Dialog open={textDialogOpen} onOpenChange={setTextDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Send Note Link via Text</DialogTitle>
-            <DialogDescription>
-              Enter the recipient's phone number to send them the secure note link.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSendText}>
-            <div className="space-y-4 py-2">
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone number</Label>
-                <Input 
-                  id="phone" 
-                  type="tel" 
-                  placeholder="+1 (555) 123-4567"
-                  value={phoneInput}
-                  onChange={(e) => setPhoneInput(e.target.value)}
-                  required
-                  disabled={isTextSending}
-                />
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Only the link to access the note will be sent. The note content remains secure.
-              </div>
-            </div>
-            <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setTextDialogOpen(false)} disabled={isTextSending}>
-                Cancel
-              </Button>
-              <Button 
-                type="submit"
-                className="bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
-                disabled={!phoneInput || isTextSending}
-              >
-                {isTextSending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Sending...

@@ -59,7 +59,7 @@ export const CopyButton = ({
               </>
             ) : (
               <>
-                <Copy className={`${compact ? "h-4 w-4" : "h-3.5 w-3.5"} will-change-transform`} />
+                <Copy className={`${compact ? "h-5 w-5" : "h-4 w-4"} will-change-transform`} />
                 {showText && !compact && 'Copy'}
               </>
             )}

@@ -65,7 +65,7 @@ export const Header = () => {
             <Button 
               variant="outline" 
               size="sm" 
-              className="ml-2 border-gradient"
+              className="ml-2 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white border-0"
               onClick={openAuthModal}
             >
               Sign In
@@ -124,7 +124,7 @@ export const Header = () => {
                 setMobileMenuOpen(false);
                 openAuthModal();
               }}
-              className="justify-start px-4"
+              className="justify-start px-4 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white border-0"
             >
               Sign In
             </Button>

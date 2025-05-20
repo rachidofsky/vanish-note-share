@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,13 +50,13 @@ const CreatedPage = () => {
   
   const handleEmailShare = () => {
     const subject = encodeURIComponent('OneTimeNote - Secure Note');
-    const body = encodeURIComponent(`I've shared a secure, self-destructing note with you: ${noteUrl}`);
+    const body = encodeURIComponent(`I've shared a secure, self-destructing note with you. The note will only be displayed when you're ready to view it: ${noteUrl}`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
     toast.success('Email client opened');
   };
   
   const handleSMSShare = () => {
-    const text = encodeURIComponent(`I've shared a secure, self-destructing note with you: ${noteUrl}`);
+    const text = encodeURIComponent(`I've shared a secure, self-destructing note with you. It will only be displayed when you're ready to view it: ${noteUrl}`);
     
     // Use different SMS URI schemes based on device detection
     const userAgent = navigator.userAgent.toLowerCase();
@@ -115,12 +116,12 @@ const CreatedPage = () => {
                   <Input 
                     value={noteUrl}
                     readOnly 
-                    className="text-sm"
+                    className="text-sm border-purple-400 border-2"
                   />
                   <CopyButton textToCopy={noteUrl} />
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  ⚠️ This note will be permanently deleted after it's viewed.
+                  ⚠️ Recipients will see a confirmation page before viewing the note. The note will be permanently deleted after it's viewed.
                 </p>
               </div>
               

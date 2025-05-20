@@ -6,7 +6,6 @@ import { BlogSearch } from '@/components/blog/BlogSearch';
 import { ArticleList } from '@/components/blog/ArticleList';
 import { blogArticles } from '@/components/blog/blogData';
 import { 
-  extractAllTags, 
   filterArticles, 
   getTopViewedArticles, 
   getRelatedArticles 
@@ -14,13 +13,9 @@ import {
 
 const BlogPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   
-  // Get all unique tags from articles
-  const allTags = extractAllTags(blogArticles);
-  
-  // Filter articles based on search query and selected tag
-  const filteredArticles = filterArticles(blogArticles, searchQuery, selectedTag);
+  // Filter articles based on search query only (no tags)
+  const filteredArticles = filterArticles(blogArticles, searchQuery, null);
   
   // Get top viewed articles
   const topViewedArticles = getTopViewedArticles(blogArticles);
@@ -48,13 +43,10 @@ const BlogPage = () => {
         <main className="flex-1 max-w-3xl">
           <h1 className="text-3xl font-bold mb-8 text-center">Security Blog</h1>
           
-          {/* Search and filter */}
+          {/* Search only */}
           <BlogSearch 
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            selectedTag={selectedTag}
-            setSelectedTag={setSelectedTag}
-            allTags={allTags}
           />
           
           {/* Articles */}

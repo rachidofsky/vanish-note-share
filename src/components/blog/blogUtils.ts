@@ -1,4 +1,3 @@
-
 import { Article, RelatedArticle } from './types';
 
 // Extract all unique tags from articles
@@ -10,22 +9,21 @@ export const extractAllTags = (articles: Article[]): string[] => {
   return Array.from(tags);
 };
 
-// Filter articles based on search query and selected tag
+// Filter articles based on search query only
 export const filterArticles = (
   articles: Article[],
   searchQuery: string,
   selectedTag: string | null
 ): Article[] => {
+  if (searchQuery === '') {
+    return articles;
+  }
+  
   return articles.filter(article => {
-    const matchesSearch = searchQuery === '' || 
-      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    return article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       article.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
       article.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
       article.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesTag = selectedTag === null || article.tags.includes(selectedTag);
-    
-    return matchesSearch && matchesTag;
   });
 };
 

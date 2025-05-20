@@ -57,11 +57,23 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          // Skip email verification for better UX
+          emailRedirectTo: window.location.origin,
+          data: {
+            email: email,
+          }
+        }
       });
 
       if (error) {
         setError(error.message);
+      } else if (data.session) {
+        // If we have a session, user is already signed in (email verification is disabled)
+        toast.success("Account created! You are now signed in.");
+        onClose();
       } else {
+        // In case email verification is enabled in the Supabase project
         toast.success("Account created! Please check your email to confirm your account.");
         setIsSignIn(true);
       }

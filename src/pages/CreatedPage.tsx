@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/CopyButton';
-import { Check, Lock, Clock, AlertTriangle, Mail, MessageSquare } from 'lucide-react';
+import { Check, Lock, Clock, AlertTriangle, Mail, MessageSquare, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { AdUnit } from '@/components/AdUnit';
 import { toast } from 'sonner';
@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CreatedPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,6 +28,9 @@ const CreatedPage = () => {
   const [textDialogOpen, setTextDialogOpen] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
+  const [isEmailSending, setIsEmailSending] = useState(false);
+  const [isTextSending, setIsTextSending] = useState(false);
+  const { user } = useAuth();
   
   useEffect(() => {
     // Get note details from localStorage
@@ -53,26 +58,75 @@ const CreatedPage = () => {
     }
   };
   
-  const handleSendEmail = (e: React.FormEvent) => {
+  const handleSendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, this would connect to an email service
-    // For now, we'll just show a success toast
-    toast.success(`Link sent to ${emailInput}`, {
-      description: "The secure note link has been emailed successfully."
-    });
-    setEmailDialogOpen(false);
-    setEmailInput('');
+    setIsEmailSending(true);
+    
+    try {
+      // Call the Supabase Edge Function to send email
+      const { data, error } = await supabase.functions.invoke('send-note-email', {
+        body: {
+          recipientEmail: emailInput,
+          noteLink: shareUrl,
+          senderEmail: user?.email
+        }
+      });
+      
+      if (error) {
+        console.error('Error sending email:', error);
+        toast.error('Failed to send email', {
+          description: error.message || 'Please try again later.'
+        });
+      } else {
+        toast.success(`Link sent to ${emailInput}`, {
+          description: "The secure note link has been emailed successfully."
+        });
+        setEmailDialogOpen(false);
+        setEmailInput('');
+      }
+    } catch (err: any) {
+      console.error('Exception sending email:', err);
+      toast.error('Failed to send email', {
+        description: err.message || 'Please try again later.'
+      });
+    } finally {
+      setIsEmailSending(false);
+    }
   };
   
-  const handleSendText = (e: React.FormEvent) => {
+  const handleSendText = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, this would connect to an SMS service
-    // For now, we'll just show a success toast
-    toast.success(`Link sent to ${phoneInput}`, {
-      description: "The secure note link has been texted successfully."
-    });
-    setTextDialogOpen(false);
-    setPhoneInput('');
+    setIsTextSending(true);
+    
+    try {
+      // Call the Supabase Edge Function to send SMS
+      const { data, error } = await supabase.functions.invoke('send-note-sms', {
+        body: {
+          phoneNumber: phoneInput,
+          noteLink: shareUrl
+        }
+      });
+      
+      if (error) {
+        console.error('Error sending text:', error);
+        toast.error('Failed to send text message', {
+          description: error.message || 'Please try again later.'
+        });
+      } else {
+        toast.success(`Link sent to ${phoneInput}`, {
+          description: "The secure note link has been texted successfully."
+        });
+        setTextDialogOpen(false);
+        setPhoneInput('');
+      }
+    } catch (err: any) {
+      console.error('Exception sending text:', err);
+      toast.error('Failed to send text message', {
+        description: err.message || 'Please try again later.'
+      });
+    } finally {
+      setIsTextSending(false);
+    }
   };
   
   return (
@@ -166,6 +220,7 @@ const CreatedPage = () => {
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   required
+                  disabled={isEmailSending}
                 />
               </div>
               <div className="text-sm text-muted-foreground">
@@ -173,15 +228,22 @@ const CreatedPage = () => {
               </div>
             </div>
             <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setEmailDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setEmailDialogOpen(false)} disabled={isEmailSending}>
                 Cancel
               </Button>
               <Button 
                 type="submit"
                 className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
-                disabled={!emailInput}
+                disabled={!emailInput || isEmailSending}
               >
-                Send Link
+                {isEmailSending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Send Link'
+                )}
               </Button>
             </DialogFooter>
           </form>
@@ -208,6 +270,7 @@ const CreatedPage = () => {
                   value={phoneInput}
                   onChange={(e) => setPhoneInput(e.target.value)}
                   required
+                  disabled={isTextSending}
                 />
               </div>
               <div className="text-sm text-muted-foreground">
@@ -215,15 +278,22 @@ const CreatedPage = () => {
               </div>
             </div>
             <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setTextDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setTextDialogOpen(false)} disabled={isTextSending}>
                 Cancel
               </Button>
               <Button 
                 type="submit"
                 className="bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
-                disabled={!phoneInput}
+                disabled={!phoneInput || isTextSending}
               >
-                Send Link
+                {isTextSending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Send Link'
+                )}
               </Button>
             </DialogFooter>
           </form>

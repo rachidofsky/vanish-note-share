@@ -10,13 +10,15 @@ interface CopyButtonProps {
   className?: string;
   successMessage?: string;
   compact?: boolean;
+  showText?: boolean; // Adding the missing prop to the interface
 }
 
 export const CopyButton = ({ 
   textToCopy, 
   className = '', 
   successMessage = 'Copied to clipboard!',
-  compact = false
+  compact = false,
+  showText = true // Default value for the new prop
 }: CopyButtonProps) => {
   const [copied, setCopied] = useState(false);
 
@@ -53,12 +55,12 @@ export const CopyButton = ({
             {copied ? (
               <>
                 <Check className={compact ? "h-4 w-4" : "h-3.5 w-3.5"} />
-                {!compact && 'Copied!'}
+                {showText && !compact && 'Copied!'}
               </>
             ) : (
               <>
                 <Copy className={compact ? "h-4 w-4" : "h-3.5 w-3.5"} />
-                {!compact && 'Copy'}
+                {showText && !compact && 'Copy'}
               </>
             )}
           </Button>

@@ -57,7 +57,7 @@ const CreatedPage = () => {
             <div className="text-sm text-muted-foreground mb-2 font-medium">Note link:</div>
             <div className="flex items-center gap-2 bg-accent/40 border border-primary/10 rounded-md px-3 py-2 overflow-hidden">
               <div className="truncate text-sm">{shareUrl}</div>
-              <CopyButton textToCopy={shareUrl} showText={false} />
+              <CopyButton textToCopy={shareUrl} compact={true} />
             </div>
             
             <div className="mt-4 text-xs text-muted-foreground space-y-2">

@@ -48,8 +48,8 @@ export const CopyButton = ({
             onClick={copyToClipboard} 
             className={`transition-all duration-300 copy-icon ${className} ${
               copied 
-                ? 'bg-green-500/20 text-green-700 border-green-500/50' 
-                : ''
+                ? 'bg-green-500/20 text-green-700 border-green-500/50 shadow-neon' 
+                : 'hover:shadow-neon'
             } ${compact ? 'w-8 h-8 p-0' : 'text-xs flex items-center gap-1'}`}
           >
             {copied ? (

@@ -8,7 +8,7 @@ const MainLayout = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background bg-security-pattern">
       <Header />
-      <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12">
+      <main className="flex-1 flex flex-col w-full py-8 sm:py-12">
         <Outlet />
       </main>
       
@@ -20,6 +20,3 @@ const MainLayout = () => {
       <Footer />
     </div>
   );
-};
-
-export default MainLayout;

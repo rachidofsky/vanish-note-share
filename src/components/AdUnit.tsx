@@ -8,8 +8,8 @@ interface AdUnitProps {
 }
 
 export const AdUnit = ({ adSlot, adFormat = 'auto', className = '' }: AdUnitProps) => {
-  // Use HTMLInsElement which is the correct type for <ins> elements
-  const adRef = useRef<HTMLElement | null>(null);
+  // Use HTMLModElement which is the correct type for <ins> elements
+  const adRef = useRef<HTMLModElement | null>(null);
   
   useEffect(() => {
     try {
@@ -33,7 +33,7 @@ export const AdUnit = ({ adSlot, adFormat = 'auto', className = '' }: AdUnitProp
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
         data-full-width-responsive="true"
-        ref={adRef as React.RefObject<HTMLElement>}
+        ref={adRef}
       ></ins>
     </div>
   );

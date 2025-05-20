@@ -17,9 +17,17 @@
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADSENSE_ID"
-    crossorigin="anonymous"></script>
+    <!-- Google AdSense script with dynamic publisher ID -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const publisherId = localStorage.getItem('adsense_publisher_id') || 'YOUR_ADSENSE_ID';
+        const scriptEl = document.createElement('script');
+        scriptEl.async = true;
+        scriptEl.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-${publisherId}`;
+        scriptEl.crossOrigin = 'anonymous';
+        document.head.appendChild(scriptEl);
+      });
+    </script>
   </head>
 
   <body>

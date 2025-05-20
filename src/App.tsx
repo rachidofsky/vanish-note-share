@@ -12,6 +12,7 @@ import CreatedPage from "./pages/CreatedPage";
 import AboutPage from "./pages/AboutPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
+import BlogPage from "./pages/BlogPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="note/:id" element={<NotePage />} />
               <Route path="created/:id" element={<CreatedPage />} />
               <Route path="about" element={<AboutPage />} />
+              <Route path="blog" element={<BlogPage />} />
               <Route path="privacy" element={<PrivacyPage />} />
               <Route path="terms" element={<TermsPage />} />
               <Route path="*" element={<NotFound />} />

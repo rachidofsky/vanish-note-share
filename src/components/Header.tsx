@@ -28,6 +28,9 @@ export const Header = () => {
         <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
           Create Note
         </Link>
+        <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          Blog
+        </Link>
         <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
           About
         </Link>

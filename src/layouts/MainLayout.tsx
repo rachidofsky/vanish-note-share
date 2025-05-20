@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { AdUnit } from '@/components/AdUnit';
+import { SecurityBadge } from '@/components/SecurityBadge';
 
 const MainLayout = () => {
   return (
@@ -19,6 +20,7 @@ const MainLayout = () => {
       </div>
       
       <Footer />
+      <SecurityBadge />
     </div>
   );
 };

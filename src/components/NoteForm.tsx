@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Shield, Lock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface NoteFormProps {
@@ -22,6 +22,12 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
   const navigate = useNavigate();
   const { user, notesRemaining, decrementNotesRemaining, totalNotesAllowed } = useAuth();
 
+  // Calculate character count and limits
+  const maxChars = 5000;
+  const charCount = noteContent.length;
+  const isNearLimit = charCount > maxChars * 0.8;
+  const isAtLimit = charCount >= maxChars;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -33,6 +39,11 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
     
     if (!noteContent.trim()) {
       toast.error('Please enter a note');
+      return;
+    }
+
+    if (isAtLimit) {
+      toast.error(`Note exceeds maximum length of ${maxChars} characters`);
       return;
     }
 
@@ -95,6 +106,13 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-6">
+      <div className="flex items-center justify-center mb-4 text-center">
+        <div className="bg-gradient-to-r from-emerald-500/20 to-blue-500/20 border border-emerald-500/30 px-4 py-2 rounded-full flex items-center gap-2">
+          <Lock className="h-4 w-4 text-emerald-500" />
+          <span className="text-xs font-medium">End-to-End Encrypted</span>
+        </div>
+      </div>
+      
       {user && notesRemaining <= 5 && (
         <Alert variant={notesRemaining === 0 ? "destructive" : "default"}>
           <AlertCircle className="h-4 w-4" />
@@ -107,26 +125,48 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
       )}
       
       <div className="space-y-2">
-        <Label htmlFor="note-content">Your secure note</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="note-content" className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-primary" />
+            Your secure note
+          </Label>
+          <span className={`text-xs ${isNearLimit ? (isAtLimit ? 'text-red-500' : 'text-amber-500') : 'text-muted-foreground'}`}>
+            {charCount}/{maxChars}
+          </span>
+        </div>
+        
         <Textarea
           id="note-content"
           placeholder="Type your sensitive information here..."
-          className="min-h-32 resize-none"
+          className={`min-h-32 resize-none ${isAtLimit ? 'border-red-500' : isNearLimit ? 'border-amber-500' : ''} bg-background/90 backdrop-blur-sm`}
           value={noteContent}
           onChange={(e) => setNoteContent(e.target.value)}
           onFocus={handleTextareaFocus}
           disabled={loading || notesRemaining <= 0}
+          maxLength={maxChars}
         />
+        
+        <div className="bg-blue-500/10 border border-blue-500/30 rounded-md p-3 mt-2">
+          <div className="flex items-start gap-2">
+            <Lock className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-muted-foreground">
+              Your note is encrypted and will be permanently deleted after being viewed or when it expires. Never include personally identifying information.
+            </p>
+          </div>
+        </div>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="expiry-type">Expiration method</Label>
+        <Label htmlFor="expiry-type" className="flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-primary" />
+          Expiration method
+        </Label>
         <Select 
           value={expiryType} 
           onValueChange={handleExpiryChange}
           disabled={loading || notesRemaining <= 0}
         >
-          <SelectTrigger id="expiry-type" className="w-full">
+          <SelectTrigger id="expiry-type" className="w-full border-primary/40">
             <SelectValue placeholder="Select expiration method" />
           </SelectTrigger>
           <SelectContent>
@@ -137,22 +177,22 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
         </Select>
       </div>
       
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
+      <div className="flex flex-col gap-4 mt-6">
+        <Button 
+          type="submit" 
+          className="w-full bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white font-semibold py-6 shadow-lg shadow-primary/20 border border-white/10"
+          disabled={loading || !noteContent.trim() || notesRemaining <= 0 || isAtLimit}
+        >
+          {loading ? 'Creating Secure Note...' : 'Create Secure Note'}
+        </Button>
+        
+        <div className="text-center text-sm text-muted-foreground">
           {user && (
             <span>
               {notesRemaining}/{totalNotesAllowed} free notes remaining this month
             </span>
           )}
         </div>
-        
-        <Button 
-          type="submit" 
-          className="w-auto" 
-          disabled={loading || !noteContent.trim() || notesRemaining <= 0}
-        >
-          {loading ? 'Creating...' : 'Create Secure Note'}
-        </Button>
       </div>
     </form>
   );

@@ -8,6 +8,7 @@ import { CopyButton } from '@/components/CopyButton';
 import { toast } from 'sonner';
 import { AdUnit } from '@/components/AdUnit';
 import { useAuth } from '@/contexts/AuthContext';
+import { Shield, Link as LinkIcon, AlertTriangle } from 'lucide-react';
 
 const CreatedPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,29 +38,39 @@ const CreatedPage = () => {
         
         {/* Center content */}
         <div className="flex-1 flex flex-col items-center">
-          <Card className="w-full max-w-lg">
-            <CardHeader>
-              <CardTitle className="text-center text-2xl">Note Created!</CardTitle>
+          <Card className="w-full max-w-lg border-primary/20 shadow-lg backdrop-blur-md bg-card/80">
+            <CardHeader className="border-b border-primary/10">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <div className="p-3 rounded-full bg-green-500/20 backdrop-blur-sm">
+                  <Shield className="h-6 w-6 text-green-500" />
+                </div>
+                <CardTitle className="text-center text-2xl">Secure Note Created!</CardTitle>
+              </div>
               <CardDescription className="text-center">
-                Your secure, self-destructing note is ready to be shared
+                Your self-destructing note is ready to be shared
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 pt-6">
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <LinkIcon className="h-4 w-4 text-primary" />
                   Share this secure link with the recipient:
                 </p>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <Input 
                     value={noteUrl}
                     readOnly 
-                    className="text-sm border-purple-400 border-2"
+                    className="text-sm border-primary/30 bg-background/80 backdrop-blur-sm"
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
                   />
                   <CopyButton textToCopy={noteUrl} />
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  ⚠️ Recipients will see a confirmation page before viewing the note. The note will be permanently deleted after it's viewed.
-                </p>
+                <div className="flex items-start gap-2 mt-4 bg-amber-50 border border-amber-200 rounded-md p-3">
+                  <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-amber-800">
+                    Important: This link can only be viewed once before it self-destructs. The note will be permanently deleted from our servers after it's viewed.
+                  </p>
+                </div>
               </div>
               
               <div className="space-y-3">

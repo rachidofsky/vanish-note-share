@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CopyButton } from './CopyButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Shield, Lock, AlertTriangle } from 'lucide-react';
 
 interface NoteCardProps {
   id: string;
@@ -90,13 +91,16 @@ export const NoteCard = ({ id }: NoteCardProps) => {
   
   if (isLoading) {
     return (
-      <Card className="w-full max-w-lg animate-pulse-slow">
+      <Card className="w-full max-w-lg animate-pulse-slow border border-primary/20 shadow-lg shadow-primary/5 backdrop-blur-md bg-card/80">
         <CardHeader>
-          <CardTitle>Loading secure note...</CardTitle>
-          <CardDescription>Please wait</CardDescription>
+          <div className="flex items-center justify-center gap-2">
+            <Lock className="h-5 w-5 text-primary animate-pulse" />
+            <CardTitle>Decrypting secure note...</CardTitle>
+          </div>
+          <CardDescription>Please wait while we verify and decrypt your note</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-32 bg-muted rounded-md"></div>
+          <div className="h-32 bg-muted/50 rounded-md shimmer-bg"></div>
         </CardContent>
       </Card>
     );
@@ -104,9 +108,12 @@ export const NoteCard = ({ id }: NoteCardProps) => {
   
   if (error) {
     return (
-      <Card className="w-full max-w-lg border-destructive">
+      <Card className="w-full max-w-lg border-destructive/50 bg-destructive/5 backdrop-blur-md">
         <CardHeader>
-          <CardTitle>Note Unavailable</CardTitle>
+          <div className="flex items-center justify-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <CardTitle>Note Unavailable</CardTitle>
+          </div>
           <CardDescription>This note cannot be accessed</CardDescription>
         </CardHeader>
         <CardContent>
@@ -120,23 +127,34 @@ export const NoteCard = ({ id }: NoteCardProps) => {
   
   if (!isConfirmed) {
     return (
-      <Card className="w-full max-w-lg animate-fade-in">
-        <CardHeader>
-          <CardTitle>Secure Note Ready</CardTitle>
-          <CardDescription>
+      <Card className="w-full max-w-lg animate-fade-in border-primary/20 backdrop-blur-md bg-card/80 shadow-lg">
+        <CardHeader className="border-b border-primary/10">
+          <div className="flex flex-col items-center justify-center gap-2">
+            <div className="p-3 rounded-full bg-primary/10 backdrop-blur-sm">
+              <Lock className="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle>Secure Note Ready</CardTitle>
+          </div>
+          <CardDescription className="text-center">
             Someone has shared a secure, self-destructing note with you
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Shield className="h-4 w-4 text-green-500" />
+            <span className="text-xs font-medium text-green-600">End-to-End Encrypted</span>
+          </div>
+          
           <Alert className="bg-amber-50 text-amber-800 border-amber-200">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
             <AlertDescription>
-              ⚠️ This note will be permanently deleted after viewing. Only view when you're ready to read the contents.
+              This note will be permanently deleted after viewing. Only view when you're ready to read the contents.
             </AlertDescription>
           </Alert>
           
           <Button 
             onClick={handleViewNote} 
-            className="w-full"
+            className="w-full bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
           >
             I'm ready to view this secure note
           </Button>
@@ -146,10 +164,16 @@ export const NoteCard = ({ id }: NoteCardProps) => {
   }
   
   return (
-    <Card className="w-full max-w-lg animate-fade-in">
-      <CardHeader className="pb-2">
-        <CardTitle>Secure Note</CardTitle>
-        <CardDescription>
+    <Card className="w-full max-w-lg animate-fade-in border-primary/20 backdrop-blur-md bg-card/80 shadow-lg">
+      <CardHeader className="pb-2 border-b border-primary/10">
+        <div className="flex items-center justify-center gap-2">
+          {hasReadNote ? 
+            <AlertTriangle className="h-5 w-5 text-amber-500" /> : 
+            <Lock className="h-5 w-5 text-primary" />
+          }
+          <CardTitle>Secure Note</CardTitle>
+        </div>
+        <CardDescription className="text-center">
           {hasReadNote ? 
             (countdown > 0 
               ? `This note will self-destruct in ${countdown} seconds` 
@@ -157,12 +181,16 @@ export const NoteCard = ({ id }: NoteCardProps) => {
             : "Reading your secure note..."}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="p-4 bg-accent rounded-md min-h-32 whitespace-pre-wrap break-words">
+      <CardContent className="space-y-4 pt-4">
+        <div className="p-4 bg-accent/50 rounded-md min-h-32 whitespace-pre-wrap break-words border border-primary/10 backdrop-blur-sm">
           {note.content}
         </div>
         
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-green-500" />
+            <span className="text-xs font-medium text-green-600">Secure Note</span>
+          </div>
           <CopyButton textToCopy={note.content} />
         </div>
       </CardContent>

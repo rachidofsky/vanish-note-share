@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,9 +56,31 @@ const CreatedPage = () => {
   
   const handleSMSShare = () => {
     const text = encodeURIComponent(`I've shared a secure, self-destructing note with you: ${noteUrl}`);
-    // Try to use SMS scheme, works on mobile devices
-    window.location.href = `sms:?body=${text}`;
-    toast.success('Message app opened');
+    
+    // Use different SMS URI schemes based on device detection
+    const userAgent = navigator.userAgent.toLowerCase();
+    
+    if (/iphone|ipad|ipod/.test(userAgent)) {
+      // iOS devices
+      window.location.href = `sms:&body=${text}`;
+    } else if (/android/.test(userAgent)) {
+      // Android devices
+      window.location.href = `sms:?body=${text}`;
+    } else {
+      // Fallback for other devices
+      try {
+        // Try the standard format
+        window.location.href = `sms:?body=${text}`;
+      } catch (e) {
+        // If that fails, show a message with the link to copy
+        toast.info('SMS sharing not supported on this device. Please copy the link manually.');
+        navigator.clipboard.writeText(noteUrl)
+          .then(() => toast.success('Link copied to clipboard'))
+          .catch(() => toast.error('Could not copy link automatically'));
+      }
+    }
+    
+    toast.success('Opening message app...');
   };
   
   return (

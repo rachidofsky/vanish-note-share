@@ -1,154 +1,111 @@
 
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { CopyButton } from '@/components/CopyButton';
-import { toast } from 'sonner';
+import { Check, Lock, Clock, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { AdUnit } from '@/components/AdUnit';
-import { useAuth } from '@/contexts/AuthContext';
-import { Shield, Link as LinkIcon, AlertTriangle, CheckCircle, Share2 } from 'lucide-react';
+import { SecurityBadge } from '@/components/SecurityBadge';
 
 const CreatedPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [noteUrl, setNoteUrl] = useState('');
-  const navigate = useNavigate();
-  const { notesRemaining, totalNotesAllowed } = useAuth();
+  const [noteDetails, setNoteDetails] = useState<any>(null);
+  const shareUrl = `${window.location.origin}/note/${id}`;
   
   useEffect(() => {
-    if (id) {
-      const url = `${window.location.origin}/note/${id}`;
-      setNoteUrl(url);
+    // Get note details from localStorage
+    const notes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
+    if (notes[id || '']) {
+      setNoteDetails({
+        expiryType: notes[id || ''].expiryType,
+        passwordProtected: notes[id || ''].passwordProtected
+      });
     }
   }, [id]);
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Secure Note from OneTimeNote',
-          text: 'I\'ve shared a secure, self-destructing note with you',
-          url: noteUrl,
-        });
-        toast.success('Link shared successfully!');
-      } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
-          toast.error('Failed to share link');
-        }
-      }
-    } else {
-      toast.info('Web Share API not supported on this browser');
+  
+  const renderExpiryInfo = () => {
+    if (!noteDetails) return null;
+    
+    switch (noteDetails.expiryType) {
+      case 'read':
+        return 'This note will be permanently deleted after it is viewed once.';
+      case '1h':
+        return 'This note will be permanently deleted after 1 hour.';
+      case '24h':
+        return 'This note will be permanently deleted after 24 hours.';
+      default:
+        return 'This note will self-destruct after being viewed.';
     }
   };
   
   return (
-    <div className="container px-4 md:px-6">
-      {/* Ad above the content */}
-      <div className="w-full max-w-6xl mx-auto mb-8">
-        <AdUnit adSlot="7788991010" adFormat="horizontal" />
-      </div>
-
-      {/* Main content with side ads */}
-      <div className="flex flex-col lg:flex-row gap-6 w-full max-w-6xl mx-auto">
-        {/* Left side vertical ad */}
-        <div className="hidden lg:block w-64">
-          <AdUnit adSlot="2233445566" adFormat="vertical" className="sticky top-20" />
-        </div>
+    <div className="flex flex-col items-center mx-auto p-4 w-full max-w-2xl">
+      <Card className="w-full shadow-lg shadow-primary/10 border-primary/20 backdrop-blur-md bg-card/80">
+        <CardHeader className="text-center">
+          <div className="mx-auto w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
+            <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+          </div>
+          <CardTitle className="text-2xl sm:text-3xl">Note Created Successfully!</CardTitle>
+          <CardDescription className="text-base max-w-md mx-auto">
+            Your secure note is ready to be shared with the recipient.
+          </CardDescription>
+        </CardHeader>
         
-        {/* Center content */}
-        <div className="flex-1 flex flex-col items-center">
-          <Card className="w-full max-w-lg border-primary/20 shadow-xl backdrop-blur-md bg-card/80 animate-fade-in">
-            <CardHeader className="border-b border-primary/10">
-              <div className="flex flex-col items-center justify-center gap-2">
-                <div className="p-3 rounded-full bg-gradient-to-r from-green-500/30 to-emerald-500/30 backdrop-blur-sm border border-green-500/30">
-                  <CheckCircle className="h-6 w-6 text-green-500" />
-                </div>
-                <CardTitle className="text-center text-2xl bg-clip-text text-transparent bg-gradient-to-r from-green-500 to-emerald-600">
-                  Secure Note Created!
-                </CardTitle>
-              </div>
-              <CardDescription className="text-center">
-                Your self-destructing note is ready to be shared
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-6">
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <LinkIcon className="h-4 w-4 text-primary" />
-                  Share this secure link with the recipient:
-                </p>
-                <div className="flex gap-2 items-center">
-                  <div className="relative flex-grow">
-                    <Input 
-                      value={noteUrl}
-                      readOnly 
-                      className="text-sm border-2 border-primary/30 bg-background/80 backdrop-blur-sm pr-12 focus-visible:border-primary"
-                      onClick={(e) => (e.target as HTMLInputElement).select()}
-                    />
-                    <div className="absolute right-1 top-1">
-                      <CopyButton 
-                        textToCopy={noteUrl} 
-                        compact={true}
-                        successMessage="Secure link copied to clipboard!"
-                      />
-                    </div>
-                  </div>
-                  
-                  {navigator.share && (
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={handleShare}
-                      className="border-primary/30"
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <div className="flex items-start gap-2 mt-4 bg-blue-50 border border-blue-200 rounded-md p-3">
-                  <Shield className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-blue-800">
-                    Security verification: <span className="font-semibold">ID#{id?.substring(0, 8)}</span> has been generated for this note. The note is encrypted and stored securely.
-                  </p>
-                </div>
-                <div className="flex items-start gap-2 mt-2 bg-amber-50 border border-amber-200 rounded-md p-3">
-                  <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-amber-800">
-                    Important: This link can only be viewed once before it self-destructs. The note will be permanently deleted after it's viewed.
-                  </p>
-                </div>
+        <CardContent className="space-y-6">
+          <div className="bg-muted/50 rounded-lg p-4">
+            <div className="text-sm text-muted-foreground mb-2 font-medium">Note link:</div>
+            <div className="flex items-center gap-2 bg-accent/40 border border-primary/10 rounded-md px-3 py-2 overflow-hidden">
+              <div className="truncate text-sm">{shareUrl}</div>
+              <CopyButton textToCopy={shareUrl} showText={false} />
+            </div>
+            
+            <div className="mt-4 text-xs text-muted-foreground space-y-2">
+              <div className="flex items-start gap-2">
+                <Clock className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary" />
+                <div>{renderExpiryInfo()}</div>
               </div>
               
-              <div className="space-y-3">
-                <div className="text-center text-sm">
-                  <span className="font-medium flex items-center justify-center gap-1 text-green-700">
-                    <Shield className="h-4 w-4 text-green-600" />
-                    {notesRemaining}/{totalNotesAllowed} free notes remaining this month
-                  </span>
+              {noteDetails?.passwordProtected && (
+                <div className="flex items-start gap-2">
+                  <Lock className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary" />
+                  <div>This note is password protected. The recipient will need the password to view it.</div>
                 </div>
-                
-                <Button 
-                  variant="default" 
-                  className="w-full bg-gradient-to-r from-primary to-violet-500 hover:from-primary/90 hover:to-violet-600 text-white"
-                  onClick={() => navigate('/')}
-                >
-                  Create another note
-                </Button>
+              )}
+              
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-500" />
+                <div>
+                  Make sure to copy this link now. For security reasons, we don't store it anywhere and you won't be able to access it again.
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Right side vertical ad */}
-        <div className="hidden lg:block w-64">
-          <AdUnit adSlot="3344556677" adFormat="vertical" className="sticky top-20" />
-        </div>
-      </div>
+            </div>
+          </div>
+          
+          <SecurityBadge className="mx-auto" />
+          
+          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              asChild
+            >
+              <Link to="/">Create another note</Link>
+            </Button>
+            
+            <Button 
+              className="w-full bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
+              onClick={() => window.open(`/note/${id}`, '_blank')}
+            >
+              Preview note
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
       
-      {/* Ad below the content */}
-      <div className="w-full max-w-6xl mx-auto mt-8">
-        <AdUnit adSlot="1234567890" adFormat="horizontal" />
+      {/* Ad below the note card */}
+      <div className="w-full mt-8">
+        <AdUnit adSlot="5678901234" adFormat="rectangle" />
       </div>
     </div>
   );

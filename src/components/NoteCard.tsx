@@ -4,7 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CopyButton } from './CopyButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Shield, Lock, AlertTriangle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Shield, Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 
 interface NoteCardProps {
   id: string;
@@ -17,6 +19,10 @@ export const NoteCard = ({ id }: NoteCardProps) => {
   const [countdown, setCountdown] = useState(5);
   const [hasReadNote, setHasReadNote] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
   
   useEffect(() => {
     // In a real app, this would be fetching from an API
@@ -45,6 +51,22 @@ export const NoteCard = ({ id }: NoteCardProps) => {
     
     fetchNote();
   }, [id]);
+
+  const verifyPassword = () => {
+    setIsVerifyingPassword(true);
+    setPasswordError(null);
+
+    // In a real implementation, this would be a secure comparison of hashed passwords
+    setTimeout(() => {
+      if (note && note.passwordProtected && password === note.password) {
+        setIsVerifyingPassword(false);
+        handleViewNote();
+      } else {
+        setIsVerifyingPassword(false);
+        setPasswordError('Incorrect password. Please try again.');
+      }
+    }, 800); // Simulate API call delay
+  };
   
   const handleViewNote = () => {
     setIsConfirmed(true);
@@ -152,12 +174,61 @@ export const NoteCard = ({ id }: NoteCardProps) => {
             </AlertDescription>
           </Alert>
           
-          <Button 
-            onClick={handleViewNote} 
-            className="w-full bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
-          >
-            I'm ready to view this secure note
-          </Button>
+          {/* Password entry form for protected notes */}
+          {note && note.passwordProtected ? (
+            <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-primary/10">
+              <div className="flex justify-center">
+                <div className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full px-3 py-1 text-xs font-medium flex items-center">
+                  <Lock className="h-3 w-3 mr-1" />
+                  Password Protected
+                </div>
+              </div>
+              
+              <Label htmlFor="note-password">Enter password to view this note</Label>
+              <div className="relative">
+                <Input
+                  id="note-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter the note password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError(null);
+                  }}
+                  className={passwordError ? "border-red-500" : ""}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              
+              {passwordError && (
+                <p className="text-red-500 text-xs flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  {passwordError}
+                </p>
+              )}
+              
+              <Button 
+                onClick={verifyPassword} 
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+                disabled={isVerifyingPassword || !password.trim()}
+              >
+                {isVerifyingPassword ? 'Verifying...' : 'Unlock Note'}
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              onClick={handleViewNote} 
+              className="w-full bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
+            >
+              I'm ready to view this secure note
+            </Button>
+          )}
         </CardContent>
       </Card>
     );

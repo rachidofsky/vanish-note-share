@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertCircle, Shield, Lock, Info, CheckCircle } from 'lucide-react';
+import { AlertCircle, Shield, Lock, Info, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Dialog,
@@ -19,6 +20,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
 
 interface NoteFormProps {
   onUnauthenticatedAction?: () => boolean;
@@ -30,6 +32,10 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
   const [loading, setLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [passwordProtected, setPasswordProtected] = useState(false);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  
   const navigate = useNavigate();
   const { user, notesRemaining, decrementNotesRemaining, totalNotesAllowed } = useAuth();
 
@@ -53,6 +59,11 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
     
     if (notesRemaining <= 0) {
       setValidationError('You have reached your monthly limit of free notes');
+      return false;
+    }
+
+    if (passwordProtected && !password.trim()) {
+      setValidationError('Password is required when password protection is enabled');
       return false;
     }
 
@@ -95,7 +106,10 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
           content: noteContent,
           expiryType,
           createdAt: new Date().toISOString(),
-          viewed: false
+          viewed: false,
+          passwordProtected,
+          // In a real implementation, this password would be hashed
+          password: passwordProtected ? password : null
         };
         
         // Store in localStorage
@@ -144,6 +158,17 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
       if (showingAuthModal) return;
     }
     setExpiryType(value);
+  };
+
+  const togglePasswordProtection = () => {
+    setPasswordProtected(!passwordProtected);
+    if (!passwordProtected) {
+      // Generate a random password as a starting point when enabling protection
+      const randomPassword = Math.random().toString(36).substring(2, 10);
+      setPassword(randomPassword);
+    } else {
+      setPassword('');
+    }
   };
 
   return (
@@ -249,6 +274,50 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
           </Select>
         </div>
         
+        {/* Password protection option */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password-protection" className="flex items-center gap-2">
+              <Lock className="h-4 w-4 text-primary" />
+              Password protection
+            </Label>
+            <Switch 
+              id="password-protection" 
+              checked={passwordProtected} 
+              onCheckedChange={togglePasswordProtection}
+              disabled={loading || notesRemaining <= 0}
+            />
+          </div>
+          
+          {passwordProtected && (
+            <div className="mt-2">
+              <Label htmlFor="password" className="sr-only">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter password for this note"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pr-10"
+                  disabled={loading || notesRemaining <= 0}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  disabled={loading || notesRemaining <= 0}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Anyone who wants to view this note will need this password
+              </p>
+            </div>
+          )}
+        </div>
+        
         <div className="flex flex-col gap-4 mt-6">
           <Button 
             type="submit" 
@@ -293,6 +362,12 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
                 <AlertCircle className="h-4 w-4 text-primary" />
                 <span>Expiration: {expiryType === 'read' ? 'After first read' : expiryType === '1h' ? 'After 1 hour' : 'After 24 hours'}</span>
               </li>
+              {passwordProtected && (
+                <li className="flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-primary" />
+                  <span>Password protected: Yes</span>
+                </li>
+              )}
             </ul>
           </div>
           <DialogFooter className="flex sm:justify-between">

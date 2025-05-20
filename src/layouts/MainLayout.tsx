@@ -18,11 +18,6 @@ const MainLayout = () => {
       </div>
       
       <Footer />
-      
-      {/* Admin Link - In a real app, you'd only show this to admins */}
-      <div className="text-center text-xs text-muted-foreground pb-2">
-        <a href="/admin" className="hover:underline">Admin</a>
-      </div>
     </div>
   );
 };

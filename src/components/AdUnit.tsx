@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface AdUnitProps {
   adSlot: string;
@@ -8,32 +8,8 @@ interface AdUnitProps {
 }
 
 export const AdUnit = ({ adSlot, adFormat = 'auto', className = '' }: AdUnitProps) => {
+  // Use HTMLModElement which is the correct type for <ins> elements
   const adRef = useRef<HTMLModElement | null>(null);
-  const [publisherId, setPublisherId] = useState<string>('YOUR_ADSENSE_ID');
-  const [actualAdSlot, setActualAdSlot] = useState<string>(adSlot);
-  const [actualAdFormat, setActualAdFormat] = useState<'auto' | 'horizontal' | 'vertical' | 'rectangle'>(adFormat);
-  
-  // Load publisher ID and ad slot details from localStorage if available
-  useEffect(() => {
-    const storedPublisherId = localStorage.getItem('adsense_publisher_id');
-    if (storedPublisherId) {
-      setPublisherId(storedPublisherId);
-    }
-    
-    const storedSlots = localStorage.getItem('adsense_slots');
-    if (storedSlots) {
-      try {
-        const slots = JSON.parse(storedSlots);
-        const matchingSlot = slots.find((slot: any) => slot.id === adSlot);
-        if (matchingSlot) {
-          setActualAdSlot(matchingSlot.id);
-          setActualAdFormat(matchingSlot.format as 'auto' | 'horizontal' | 'vertical' | 'rectangle');
-        }
-      } catch (error) {
-        console.error('Error parsing stored ad slots:', error);
-      }
-    }
-  }, [adSlot]);
   
   useEffect(() => {
     try {
@@ -53,9 +29,9 @@ export const AdUnit = ({ adSlot, adFormat = 'auto', className = '' }: AdUnitProp
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
-        data-ad-client={`ca-pub-${publisherId}`}
-        data-ad-slot={actualAdSlot}
-        data-ad-format={actualAdFormat}
+        data-ad-client="ca-pub-YOUR_ADSENSE_ID"
+        data-ad-slot={adSlot}
+        data-ad-format={adFormat}
         data-full-width-responsive="true"
         ref={adRef}
       ></ins>

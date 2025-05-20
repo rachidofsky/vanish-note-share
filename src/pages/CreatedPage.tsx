@@ -3,14 +3,29 @@ import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/CopyButton';
-import { Check, Lock, Clock, AlertTriangle } from 'lucide-react';
+import { Check, Lock, Clock, AlertTriangle, Mail, MessageSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { AdUnit } from '@/components/AdUnit';
+import { toast } from 'sonner';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const CreatedPage = () => {
   const { id } = useParams<{ id: string }>();
   const [noteDetails, setNoteDetails] = useState<any>(null);
   const shareUrl = `${window.location.origin}/note/${id}`;
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [textDialogOpen, setTextDialogOpen] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
   
   useEffect(() => {
     // Get note details from localStorage
@@ -36,6 +51,28 @@ const CreatedPage = () => {
       default:
         return 'This note will self-destruct after being viewed.';
     }
+  };
+  
+  const handleSendEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real application, this would connect to an email service
+    // For now, we'll just show a success toast
+    toast.success(`Link sent to ${emailInput}`, {
+      description: "The secure note link has been emailed successfully."
+    });
+    setEmailDialogOpen(false);
+    setEmailInput('');
+  };
+  
+  const handleSendText = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real application, this would connect to an SMS service
+    // For now, we'll just show a success toast
+    toast.success(`Link sent to ${phoneInput}`, {
+      description: "The secure note link has been texted successfully."
+    });
+    setTextDialogOpen(false);
+    setPhoneInput('');
   };
   
   return (
@@ -90,15 +127,108 @@ const CreatedPage = () => {
               <Link to="/">Create another note</Link>
             </Button>
             
-            <Button 
-              className="w-full bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
-              onClick={() => window.open(`/note/${id}`, '_blank')}
-            >
-              Preview note
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 w-full">
+              <Button 
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+                onClick={() => setEmailDialogOpen(true)}
+              >
+                <Mail className="mr-2 h-4 w-4" /> Send via Email
+              </Button>
+              
+              <Button 
+                className="w-full bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
+                onClick={() => setTextDialogOpen(true)}
+              >
+                <MessageSquare className="mr-2 h-4 w-4" /> Send via Text
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
+      
+      {/* Email Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Note Link via Email</DialogTitle>
+            <DialogDescription>
+              Enter the recipient's email address to send them the secure note link.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSendEmail}>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email address</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="recipient@example.com"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Only the link to access the note will be sent. The note content remains secure.
+              </div>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="outline" onClick={() => setEmailDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit"
+                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+                disabled={!emailInput}
+              >
+                Send Link
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Text Message Dialog */}
+      <Dialog open={textDialogOpen} onOpenChange={setTextDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Note Link via Text</DialogTitle>
+            <DialogDescription>
+              Enter the recipient's phone number to send them the secure note link.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSendText}>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone number</Label>
+                <Input 
+                  id="phone" 
+                  type="tel" 
+                  placeholder="+1 (555) 123-4567"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Only the link to access the note will be sent. The note content remains secure.
+              </div>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="outline" onClick={() => setTextDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit"
+                className="bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white"
+                disabled={!phoneInput}
+              >
+                Send Link
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
       
       {/* Ad below the note card */}
       <div className="w-full mt-8">

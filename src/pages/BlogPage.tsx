@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Search, Filter } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Article {
   id: number;
@@ -352,7 +353,15 @@ const BlogPage = () => {
               <CardContent className="space-y-4">
                 {topViewedArticles.map(article => (
                   <div key={article.id} className="group">
-                    <h3 className="font-medium group-hover:text-primary transition-colors cursor-pointer">
+                    <h3 
+                      className="font-medium group-hover:text-primary transition-colors cursor-pointer"
+                      onClick={() => {
+                        const element = document.getElementById(`article-${article.id}`);
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                    >
                       {article.title}
                     </h3>
                     <p className="text-xs text-muted-foreground">{article.viewCount} views</p>
@@ -411,19 +420,20 @@ const BlogPage = () => {
           <div className="space-y-12">
             {filteredArticles.length > 0 ? (
               filteredArticles.map(article => (
-                <BlogArticle 
-                  key={article.id}
-                  id={article.id}
-                  title={article.title}
-                  excerpt={article.excerpt}
-                  date={article.date}
-                  author={article.author}
-                  content={article.content}
-                  viewCount={article.viewCount}
-                  tags={article.tags}
-                  comments={article.comments || []}
-                  relatedArticles={getRelatedArticles(article.id)}
-                />
+                <div id={`article-${article.id}`} key={article.id}>
+                  <BlogArticle 
+                    id={article.id}
+                    title={article.title}
+                    excerpt={article.excerpt}
+                    date={article.date}
+                    author={article.author}
+                    content={article.content}
+                    viewCount={article.viewCount}
+                    tags={article.tags}
+                    comments={article.comments || []}
+                    relatedArticles={getRelatedArticles(article.id)}
+                  />
+                </div>
               ))
             ) : (
               <div className="text-center py-12">

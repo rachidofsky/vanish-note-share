@@ -8,7 +8,8 @@ interface AdUnitProps {
 }
 
 export const AdUnit = ({ adSlot, adFormat = 'auto', className = '' }: AdUnitProps) => {
-  const adRef = useRef<HTMLDivElement>(null);
+  // Change the ref type to HTMLElement which is more generic and compatible
+  const adRef = useRef<HTMLElement>(null);
   
   useEffect(() => {
     try {

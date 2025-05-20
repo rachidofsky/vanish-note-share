@@ -43,24 +43,24 @@ export const CopyButton = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <Button 
-            variant={copied ? "secondary" : "outline"} 
+            variant={copied ? "default" : "default"} 
             size={compact ? "icon" : "sm"} 
             onClick={copyToClipboard} 
-            className={`copy-icon transition-all duration-300 ${className} ${
+            className={`copy-button transition-all duration-300 ${className} ${
               copied 
-                ? 'bg-green-500/20 text-green-700 border-green-500/50 shadow-neon' 
-                : ''
+                ? 'bg-green-500 text-white shadow-neon border-green-500/50' 
+                : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
             } ${compact ? 'w-16 h-8 p-0' : 'text-xs flex items-center gap-1 w-[calc(100%*2)]'} relative overflow-hidden group`}
           >
             <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:animate-shimmer"></span>
             {copied ? (
               <>
-                <Check className={`${compact ? "h-4 w-4" : "h-3.5 w-3.5"} animate-spin-slow`} />
+                <Check className={`${compact ? "h-4 w-4" : "h-3.5 w-3.5"} animate-spin-slow text-white`} />
                 {showText && !compact && 'Copied!'}
               </>
             ) : (
               <>
-                <Copy className={`${compact ? "h-5 w-5" : "h-4 w-4"} will-change-transform`} />
+                <Copy className={`${compact ? "h-5 w-5" : "h-4 w-4"} will-change-transform text-white`} />
                 {showText && !compact && 'Copy'}
               </>
             )}

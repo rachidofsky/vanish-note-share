@@ -1,9 +1,15 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AdUnit } from '@/components/AdUnit';
 
 const TermsPage = () => {
   return (
     <div className="flex flex-col items-center mx-auto p-4 max-w-3xl">
+      {/* Ad above content */}
+      <div className="w-full max-w-6xl mx-auto mb-8">
+        <AdUnit adSlot="8899001122" adFormat="horizontal" />
+      </div>
+      
       <div className="text-center mb-10">
         <h1 className="text-3xl sm:text-4xl font-bold mb-4">Terms of Service</h1>
         <p className="text-lg text-muted-foreground">
@@ -71,6 +77,11 @@ const TermsPage = () => {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Ad below content */}
+      <div className="w-full max-w-6xl mx-auto mt-8">
+        <AdUnit adSlot="9900112233" adFormat="horizontal" />
+      </div>
     </div>
   );
 };

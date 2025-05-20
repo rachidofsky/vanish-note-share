@@ -2,10 +2,16 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { AdUnit } from '@/components/AdUnit';
 
 const AboutPage = () => {
   return (
     <div className="flex flex-col items-center mx-auto p-4 max-w-3xl">
+      {/* Ad above content */}
+      <div className="w-full max-w-6xl mx-auto mb-8">
+        <AdUnit adSlot="4455667788" adFormat="horizontal" />
+      </div>
+      
       <div className="text-center mb-10">
         <h1 className="text-3xl sm:text-4xl font-bold mb-4">About OneTimeNote</h1>
         <p className="text-lg text-muted-foreground">
@@ -101,6 +107,11 @@ const AboutPage = () => {
         <Button asChild>
           <Link to="/">Create a Secure Note</Link>
         </Button>
+      </div>
+      
+      {/* Ad below content */}
+      <div className="w-full max-w-6xl mx-auto mt-8">
+        <AdUnit adSlot="5566778899" adFormat="horizontal" />
       </div>
     </div>
   );

@@ -20,3 +20,6 @@ const MainLayout = () => {
       <Footer />
     </div>
   );
+};
+
+export default MainLayout;

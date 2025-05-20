@@ -50,7 +50,7 @@ export const CopyButton = ({
               copied 
                 ? 'bg-green-500/20 text-green-700 border-green-500/50 shadow-neon' 
                 : ''
-            } ${compact ? 'w-8 h-8 p-0' : 'text-xs flex items-center gap-1'} relative overflow-hidden group`}
+            } ${compact ? 'w-16 h-8 p-0' : 'text-xs flex items-center gap-1 w-[calc(100%*2)]'} relative overflow-hidden group`}
           >
             <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:animate-shimmer"></span>
             {copied ? (

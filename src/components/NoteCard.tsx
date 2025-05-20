@@ -13,6 +13,7 @@ export const NoteCard = ({ id }: NoteCardProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(5);
+  const [hasReadNote, setHasReadNote] = useState(false);
   
   useEffect(() => {
     // In a real app, this would be fetching from an API
@@ -29,42 +30,52 @@ export const NoteCard = ({ id }: NoteCardProps) => {
           return;
         }
         
-        // If note exists and hasn't been viewed yet
+        // Set the note content without marking as viewed yet
         setNote(foundNote);
+        setIsLoading(false);
         
-        // Only mark as viewed if not previously viewed
+        // Mark as viewed only after the note has been displayed for 2 seconds
+        // This gives the user time to actually read the note
         if (!foundNote.viewed) {
-          // Mark as viewed
-          foundNote.viewed = true;
-          notes[id] = foundNote;
-          localStorage.setItem('oneTimeNotes', JSON.stringify(notes));
+          const viewTimer = setTimeout(() => {
+            setHasReadNote(true);
+            
+            // Mark as viewed in localStorage
+            const updatedNotes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
+            if (updatedNotes[id]) {
+              updatedNotes[id].viewed = true;
+              localStorage.setItem('oneTimeNotes', JSON.stringify(updatedNotes));
+            }
+            
+            // Start countdown for deletion
+            const countdownTimer = setInterval(() => {
+              setCountdown(prev => {
+                if (prev <= 1) {
+                  clearInterval(countdownTimer);
+                  // Delete note after countdown
+                  setTimeout(() => {
+                    const finalNotes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
+                    delete finalNotes[id];
+                    localStorage.setItem('oneTimeNotes', JSON.stringify(finalNotes));
+                    setNote(null);
+                    setError('This note has self-destructed and is no longer available.');
+                  }, 500);
+                  return 0;
+                }
+                return prev - 1;
+              });
+            }, 1000);
+          }, 2000); // Wait 2 seconds before marking as viewed
           
-          // Start countdown
-          const timer = setInterval(() => {
-            setCountdown(prev => {
-              if (prev <= 1) {
-                clearInterval(timer);
-                // Delete note after countdown
-                setTimeout(() => {
-                  const updatedNotes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
-                  delete updatedNotes[id];
-                  localStorage.setItem('oneTimeNotes', JSON.stringify(updatedNotes));
-                  setNote(null);
-                  setError('This note has self-destructed and is no longer available.');
-                }, 500);
-                return 0;
-              }
-              return prev - 1;
-            });
-          }, 1000);
+          return () => clearTimeout(viewTimer);
         } else {
           // If already viewed but still in storage (during countdown period),
           // we still show it but with proper message
+          setHasReadNote(true);
           setCountdown(0);
         }
       } catch (err) {
         setError('An error occurred while retrieving the note.');
-      } finally {
         setIsLoading(false);
       }
     };
@@ -107,9 +118,11 @@ export const NoteCard = ({ id }: NoteCardProps) => {
       <CardHeader className="pb-2">
         <CardTitle>Secure Note</CardTitle>
         <CardDescription>
-          {countdown > 0 
-            ? `This note will self-destruct in ${countdown} seconds` 
-            : "This note has been viewed and will be deleted soon"}
+          {hasReadNote ? 
+            (countdown > 0 
+              ? `This note will self-destruct in ${countdown} seconds` 
+              : "This note has been viewed and will be deleted soon")
+            : "Reading your secure note..."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

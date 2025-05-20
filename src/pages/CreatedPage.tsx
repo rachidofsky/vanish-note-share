@@ -7,10 +7,18 @@ import { Input } from '@/components/ui/input';
 import { CopyButton } from '@/components/CopyButton';
 import { toast } from 'sonner';
 import { AdUnit } from '@/components/AdUnit';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Share, Mail, MessageSquare } from 'lucide-react';
 
 const CreatedPage = () => {
   const { id } = useParams<{ id: string }>();
   const [noteUrl, setNoteUrl] = useState('');
+  const [showShareMenu, setShowShareMenu] = useState(false);
   
   useEffect(() => {
     if (id) {
@@ -27,12 +35,31 @@ const CreatedPage = () => {
           text: 'I\'ve shared a secure, self-destructing note with you.',
           url: noteUrl,
         });
+        toast.success('Note shared successfully');
       } catch (error) {
-        toast.error('Error sharing');
+        // Only show error if it's not a user cancellation
+        if ((error as Error).name !== 'AbortError') {
+          toast.error('Error sharing the note');
+        }
       }
     } else {
-      toast.info('Web Share API not available');
+      setShowShareMenu(true);
+      toast.info('Use one of these sharing options');
     }
+  };
+  
+  const handleEmailShare = () => {
+    const subject = encodeURIComponent('OneTimeNote - Secure Note');
+    const body = encodeURIComponent(`I've shared a secure, self-destructing note with you: ${noteUrl}`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    toast.success('Email client opened');
+  };
+  
+  const handleSMSShare = () => {
+    const text = encodeURIComponent(`I've shared a secure, self-destructing note with you: ${noteUrl}`);
+    // Try to use SMS scheme, works on mobile devices
+    window.location.href = `sms:?body=${text}`;
+    toast.success('Message app opened');
   };
   
   return (
@@ -77,12 +104,27 @@ const CreatedPage = () => {
               </div>
               
               <div className="space-y-3">
-                <Button 
-                  className="w-full" 
-                  onClick={handleShare}
-                >
-                  Share via...
-                </Button>
+                <DropdownMenu open={showShareMenu} onOpenChange={setShowShareMenu}>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      className="w-full" 
+                      onClick={handleShare}
+                    >
+                      <Share className="mr-2 h-4 w-4" />
+                      Share via...
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="w-56">
+                    <DropdownMenuItem onClick={handleEmailShare}>
+                      <Mail className="mr-2 h-4 w-4" />
+                      <span>Email</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSMSShare}>
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      <span>SMS Message</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 
                 <Button 
                   variant="outline" 

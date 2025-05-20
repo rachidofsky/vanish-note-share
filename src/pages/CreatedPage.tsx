@@ -6,7 +6,6 @@ import { CopyButton } from '@/components/CopyButton';
 import { Check, Lock, Clock, AlertTriangle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { AdUnit } from '@/components/AdUnit';
-import { SecurityBadge } from '@/components/SecurityBadge';
 
 const CreatedPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -81,8 +80,6 @@ const CreatedPage = () => {
               </div>
             </div>
           </div>
-          
-          <SecurityBadge className="mx-auto" />
           
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
             <Button 

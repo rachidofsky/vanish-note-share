@@ -16,11 +16,10 @@ import TermsPage from "./pages/TermsPage";
 import BlogPage from "./pages/BlogPage";
 import NotFound from "./pages/NotFound";
 
-// Create a new QueryClient instance inside the component
+// Create a single instance of QueryClient outside the component
+const queryClient = new QueryClient();
+
 const App = () => {
-  // Create a client inside the component
-  const queryClient = new QueryClient();
-  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

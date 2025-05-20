@@ -38,7 +38,8 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       } else if (data.session) {
         toast.success("Signed in successfully!");
         onClose();
-        // Stay on the same page after sign in
+        // Navigate to home page after sign in
+        navigate("/");
       }
     } catch (err) {
       setError("An unexpected error occurred");
@@ -72,6 +73,8 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         // If we have a session, user is already signed in (email verification is disabled)
         toast.success("Account created! You are now signed in.");
         onClose();
+        // Navigate to home page after sign up
+        navigate("/");
       } else {
         // In case email verification is enabled in the Supabase project
         toast.success("Account created! Please check your email to confirm your account.");

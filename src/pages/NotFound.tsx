@@ -2,6 +2,8 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { AdUnit } from '@/components/AdUnit';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const NotFound = () => {
   const location = useLocation();
@@ -21,11 +23,17 @@ const NotFound = () => {
       </div>
       
       <div className="flex flex-col items-center justify-center py-20">
-        <h1 className="text-6xl font-bold mb-4">404</h1>
-        <p className="text-xl text-muted-foreground mb-8">Oops! Page not found</p>
-        <a href="/" className="text-primary hover:text-primary/90 underline transition-colors">
-          Return to Home
-        </a>
+        <div className="relative">
+          <h1 className="text-8xl md:text-9xl font-bold text-gradient mb-4">404</h1>
+          <div className="absolute inset-0 blur-3xl bg-primary/20 rounded-full -z-10"></div>
+        </div>
+        <p className="text-xl text-muted-foreground mb-8">This page has self-destructed</p>
+        <Button asChild className="btn-gradient">
+          <a href="/" className="flex items-center gap-2">
+            <ArrowLeft size={16} />
+            Return to Home
+          </a>
+        </Button>
       </div>
       
       {/* Ad below content */}

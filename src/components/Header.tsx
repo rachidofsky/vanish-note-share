@@ -1,51 +1,109 @@
 
 import { Link } from 'react-router-dom';
-import { LockIcon, LogOutIcon } from 'lucide-react';
+import { LockIcon, LogOutIcon, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 
 export const Header = () => {
   const { user, signOut, notesRemaining, totalNotesAllowed } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
   };
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   return (
-    <header className="w-full py-4 px-6 sm:px-8 flex items-center justify-between border-b z-10">
-      <Link to="/" className="flex items-center gap-2">
-        <div className="w-8 h-8 flex items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <LockIcon className="w-4 h-4" />
-        </div>
-        <h1 className="text-xl font-bold text-foreground">OneTimeNote</h1>
-      </Link>
-      <div className="flex gap-4 items-center">
-        {user && (
-          <div className="text-xs text-muted-foreground hidden sm:block">
-            <span className="font-medium">{notesRemaining}/{totalNotesAllowed}</span> notes left
+    <header className="w-full py-6 px-6 sm:px-8 backdrop-blur-md bg-background/80 sticky top-0 z-50 border-b border-white/10">
+      <div className="container mx-auto flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-3">
+          <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/30 animate-float">
+            <LockIcon className="w-5 h-5" />
           </div>
-        )}
-        <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Create Note
+          <h1 className="text-2xl font-bold font-display text-gradient">OneTimeNote</h1>
         </Link>
-        <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Blog
-        </Link>
-        <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          About
-        </Link>
-        {user && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSignOut}
-            className="flex items-center gap-1 ml-2"
-          >
-            <LogOutIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Sign Out</span>
-          </Button>
-        )}
+        
+        {/* Desktop navigation */}
+        <div className="hidden md:flex gap-6 items-center">
+          {user && (
+            <div className="px-4 py-1.5 rounded-full bg-secondary text-secondary-foreground text-xs font-medium">
+              <span className="font-bold">{notesRemaining}/{totalNotesAllowed}</span> notes left
+            </div>
+          )}
+          <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
+            Create Note
+          </Link>
+          <Link to="/blog" className="text-sm font-medium hover:text-primary transition-colors">
+            Blog
+          </Link>
+          <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
+            About
+          </Link>
+          {user ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="flex items-center gap-2 ml-2 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-950 dark:hover:text-rose-400"
+            >
+              <LogOutIcon className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" className="ml-2 border-gradient">
+              Sign In
+            </Button>
+          )}
+        </div>
+        
+        {/* Mobile menu button */}
+        <button 
+          className="md:hidden text-foreground p-2" 
+          onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
+        >
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+      
+      {/* Mobile navigation */}
+      {mobileMenuOpen && (
+        <div className="absolute top-full left-0 right-0 bg-background/95 backdrop-blur-lg border-b border-white/10 shadow-xl p-4 flex flex-col gap-4 md:hidden animate-fade-in">
+          <Link to="/" className="px-4 py-2 rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+            Create Note
+          </Link>
+          <Link to="/blog" className="px-4 py-2 rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+            Blog
+          </Link>
+          <Link to="/about" className="px-4 py-2 rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+            About
+          </Link>
+          {user && (
+            <div className="px-4 py-2">
+              <span className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{notesRemaining}/{totalNotesAllowed}</span> notes left
+              </span>
+            </div>
+          )}
+          {user && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                handleSignOut();
+                setMobileMenuOpen(false);
+              }}
+              className="justify-start px-4"
+            >
+              <LogOutIcon className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          )}
+        </div>
+      )}
     </header>
   );
 };

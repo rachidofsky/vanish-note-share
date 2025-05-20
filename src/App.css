@@ -1,7 +1,8 @@
+
 #root {
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0;
   text-align: center;
 }
 
@@ -12,7 +13,7 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em #9b87f5);
 }
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
@@ -35,8 +36,51 @@
 
 .card {
   padding: 2em;
+  border-radius: var(--radius);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(155, 135, 245, 0.1), 0 10px 10px -5px rgba(155, 135, 245, 0.04);
 }
 
 .read-the-docs {
-  color: #888;
+  color: #8E9196;
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.animated-gradient {
+  background: linear-gradient(-45deg, #9b87f5, #D946EF, #33C3F0, #8B5CF6);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.text-outline {
+  -webkit-text-stroke: 1px rgba(155, 135, 245, 0.5);
+  color: transparent;
+}
+
+.shadow-neon {
+  box-shadow: 0 0 5px rgba(155, 135, 245, 0.5), 
+              0 0 20px rgba(155, 135, 245, 0.3), 
+              0 0 40px rgba(155, 135, 245, 0.1);
 }

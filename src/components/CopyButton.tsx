@@ -46,12 +46,13 @@ export const CopyButton = ({
             variant={copied ? "secondary" : "outline"} 
             size={compact ? "icon" : "sm"} 
             onClick={copyToClipboard} 
-            className={`transition-all duration-300 copy-icon ${className} ${
+            className={`copy-icon transition-all duration-300 ${className} ${
               copied 
                 ? 'bg-green-500/20 text-green-700 border-green-500/50 shadow-neon' 
-                : 'hover:shadow-neon'
-            } ${compact ? 'w-8 h-8 p-0' : 'text-xs flex items-center gap-1'}`}
+                : ''
+            } ${compact ? 'w-8 h-8 p-0' : 'text-xs flex items-center gap-1'} relative overflow-hidden group`}
           >
+            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:animate-shimmer"></span>
             {copied ? (
               <>
                 <Check className={`${compact ? "h-4 w-4" : "h-3.5 w-3.5"} animate-spin-slow`} />

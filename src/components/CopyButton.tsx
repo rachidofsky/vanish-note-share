@@ -10,7 +10,7 @@ interface CopyButtonProps {
   className?: string;
   successMessage?: string;
   compact?: boolean;
-  showText?: boolean; // Adding the missing prop to the interface
+  showText?: boolean;
 }
 
 export const CopyButton = ({ 
@@ -18,7 +18,7 @@ export const CopyButton = ({
   className = '', 
   successMessage = 'Copied to clipboard!',
   compact = false,
-  showText = true // Default value for the new prop
+  showText = true
 }: CopyButtonProps) => {
   const [copied, setCopied] = useState(false);
 
@@ -46,7 +46,7 @@ export const CopyButton = ({
             variant={copied ? "secondary" : "outline"} 
             size={compact ? "icon" : "sm"} 
             onClick={copyToClipboard} 
-            className={`transition-all duration-300 ${className} ${
+            className={`transition-all duration-300 copy-icon ${className} ${
               copied 
                 ? 'bg-green-500/20 text-green-700 border-green-500/50' 
                 : ''
@@ -54,12 +54,12 @@ export const CopyButton = ({
           >
             {copied ? (
               <>
-                <Check className={compact ? "h-4 w-4" : "h-3.5 w-3.5"} />
+                <Check className={`${compact ? "h-4 w-4" : "h-3.5 w-3.5"} animate-spin-slow`} />
                 {showText && !compact && 'Copied!'}
               </>
             ) : (
               <>
-                <Copy className={compact ? "h-4 w-4" : "h-3.5 w-3.5"} />
+                <Copy className={`${compact ? "h-4 w-4" : "h-3.5 w-3.5"} will-change-transform`} />
                 {showText && !compact && 'Copy'}
               </>
             )}

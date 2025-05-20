@@ -19,6 +19,20 @@
   filter: drop-shadow(0 0 2em #10B981);
 }
 
+.copy-icon {
+  will-change: filter;
+  transition: filter 300ms;
+}
+.copy-icon:hover {
+  filter: drop-shadow(0 0 1em #0EA5E9);
+}
+.copy-icon svg {
+  transition: transform 0.3s ease;
+}
+.copy-icon:hover svg {
+  transform: scale(1.1);
+}
+
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -26,6 +40,19 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 1.5s linear infinite;
 }
 
 @media (prefers-reduced-motion: no-preference) {

@@ -7,15 +7,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from '@/contexts/AuthContext';
 
-export const NoteForm = () => {
+interface NoteFormProps {
+  onUnauthenticatedAction?: () => boolean;
+}
+
+export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
   const [noteContent, setNoteContent] = useState('');
   const [expiryType, setExpiryType] = useState('read');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check authentication first if handler provided
+    if (onUnauthenticatedAction && !user) {
+      const showingAuthModal = onUnauthenticatedAction();
+      if (showingAuthModal) return;
+    }
     
     if (!noteContent.trim()) {
       toast.error('Please enter a note');
@@ -54,6 +66,22 @@ export const NoteForm = () => {
     }, 1000);
   };
 
+  const handleTextareaFocus = () => {
+    // Check authentication when user tries to type a note
+    if (onUnauthenticatedAction && !user) {
+      onUnauthenticatedAction();
+    }
+  };
+
+  const handleExpiryChange = (value: string) => {
+    // Check authentication when user tries to change expiry
+    if (onUnauthenticatedAction && !user) {
+      const showingAuthModal = onUnauthenticatedAction();
+      if (showingAuthModal) return;
+    }
+    setExpiryType(value);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-6">
       <div className="space-y-2">
@@ -64,6 +92,7 @@ export const NoteForm = () => {
           className="min-h-32 resize-none"
           value={noteContent}
           onChange={(e) => setNoteContent(e.target.value)}
+          onFocus={handleTextareaFocus}
           disabled={loading}
         />
       </div>
@@ -72,7 +101,7 @@ export const NoteForm = () => {
         <Label htmlFor="expiry-type">Expiration method</Label>
         <Select 
           value={expiryType} 
-          onValueChange={setExpiryType}
+          onValueChange={handleExpiryChange}
           disabled={loading}
         >
           <SelectTrigger id="expiry-type" className="w-full">

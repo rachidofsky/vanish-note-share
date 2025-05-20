@@ -1,11 +1,29 @@
 
+import { useState } from 'react';
 import { NoteForm } from '@/components/NoteForm';
 import { LockIcon } from '@/components/icons/LockIcon';
 import { AdUnit } from '@/components/AdUnit';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthModal } from '@/components/AuthModal';
 
 const HomePage = () => {
+  const { user, isLoading } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Handle form interaction when user is not signed in
+  const handleUnauthenticatedAction = () => {
+    if (!user && !isLoading) {
+      setShowAuthModal(true);
+      return true;
+    }
+    return false;
+  };
+
   return (
     <div className="container px-4 md:px-6">
+      {/* Auth modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+
       {/* Ad above the title */}
       <div className="w-full max-w-6xl mx-auto mb-8">
         <AdUnit adSlot="1122334455" adFormat="horizontal" />
@@ -29,7 +47,7 @@ const HomePage = () => {
               Create encrypted, self-destructing notes that can only be viewed once before they disappear forever.
             </p>
           </div>
-          <NoteForm />
+          <NoteForm onUnauthenticatedAction={handleUnauthenticatedAction} />
         </div>
         
         {/* Right side vertical ad */}

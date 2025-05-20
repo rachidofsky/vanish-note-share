@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/contexts/AuthContext';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface NoteFormProps {
   onUnauthenticatedAction?: () => boolean;
@@ -18,7 +20,7 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
   const [expiryType, setExpiryType] = useState('read');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, notesRemaining, decrementNotesRemaining } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +33,12 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
     
     if (!noteContent.trim()) {
       toast.error('Please enter a note');
+      return;
+    }
+
+    // Check if user has notes remaining
+    if (notesRemaining <= 0) {
+      toast.error('You have reached your monthly limit of free notes');
       return;
     }
     
@@ -55,6 +63,9 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
         const notes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
         notes[noteId] = note;
         localStorage.setItem('oneTimeNotes', JSON.stringify(notes));
+        
+        // Decrement the user's remaining notes count
+        decrementNotesRemaining();
         
         // Redirect to the success page
         navigate(`/created/${noteId}`);
@@ -84,6 +95,17 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-6">
+      {user && notesRemaining <= 5 && (
+        <Alert variant={notesRemaining === 0 ? "destructive" : "warning"}>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {notesRemaining === 0 
+              ? "You've used all your free notes for this month." 
+              : `You have ${notesRemaining} note${notesRemaining === 1 ? '' : 's'} remaining this month.`}
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="space-y-2">
         <Label htmlFor="note-content">Your secure note</Label>
         <Textarea
@@ -93,7 +115,7 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
           value={noteContent}
           onChange={(e) => setNoteContent(e.target.value)}
           onFocus={handleTextareaFocus}
-          disabled={loading}
+          disabled={loading || notesRemaining <= 0}
         />
       </div>
       
@@ -102,7 +124,7 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
         <Select 
           value={expiryType} 
           onValueChange={handleExpiryChange}
-          disabled={loading}
+          disabled={loading || notesRemaining <= 0}
         >
           <SelectTrigger id="expiry-type" className="w-full">
             <SelectValue placeholder="Select expiration method" />
@@ -115,13 +137,23 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
         </Select>
       </div>
       
-      <Button 
-        type="submit" 
-        className="w-full" 
-        disabled={loading || !noteContent.trim()}
-      >
-        {loading ? 'Creating...' : 'Create Secure Note'}
-      </Button>
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          {user && (
+            <span>
+              {notesRemaining}/{MONTHLY_NOTES_LIMIT} free notes remaining this month
+            </span>
+          )}
+        </div>
+        
+        <Button 
+          type="submit" 
+          className="w-auto" 
+          disabled={loading || !noteContent.trim() || notesRemaining <= 0}
+        >
+          {loading ? 'Creating...' : 'Create Secure Note'}
+        </Button>
+      </div>
     </form>
   );
 };

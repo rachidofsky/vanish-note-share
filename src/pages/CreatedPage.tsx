@@ -7,18 +7,12 @@ import { Input } from '@/components/ui/input';
 import { CopyButton } from '@/components/CopyButton';
 import { toast } from 'sonner';
 import { AdUnit } from '@/components/AdUnit';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { Share, Mail, MessageSquare } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CreatedPage = () => {
   const { id } = useParams<{ id: string }>();
   const [noteUrl, setNoteUrl] = useState('');
-  const [showShareMenu, setShowShareMenu] = useState(false);
+  const { notesRemaining, totalNotesAllowed } = useAuth();
   
   useEffect(() => {
     if (id) {
@@ -26,63 +20,6 @@ const CreatedPage = () => {
       setNoteUrl(url);
     }
   }, [id]);
-  
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'OneTimeNote - Secure Note',
-          text: 'I\'ve shared a secure, self-destructing note with you.',
-          url: noteUrl,
-        });
-        toast.success('Note shared successfully');
-      } catch (error) {
-        // Only show error if it's not a user cancellation
-        if ((error as Error).name !== 'AbortError') {
-          toast.error('Error sharing the note');
-        }
-      }
-    } else {
-      setShowShareMenu(true);
-      toast.info('Use one of these sharing options');
-    }
-  };
-  
-  const handleEmailShare = () => {
-    const subject = encodeURIComponent('OneTimeNote - Secure Note');
-    const body = encodeURIComponent(`I've shared a secure, self-destructing note with you. The note will only be displayed when you're ready to view it: ${noteUrl}`);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    toast.success('Email client opened');
-  };
-  
-  const handleSMSShare = () => {
-    const text = encodeURIComponent(`I've shared a secure, self-destructing note with you. It will only be displayed when you're ready to view it: ${noteUrl}`);
-    
-    // Use different SMS URI schemes based on device detection
-    const userAgent = navigator.userAgent.toLowerCase();
-    
-    if (/iphone|ipad|ipod/.test(userAgent)) {
-      // iOS devices
-      window.location.href = `sms:&body=${text}`;
-    } else if (/android/.test(userAgent)) {
-      // Android devices
-      window.location.href = `sms:?body=${text}`;
-    } else {
-      // Fallback for other devices
-      try {
-        // Try the standard format
-        window.location.href = `sms:?body=${text}`;
-      } catch (e) {
-        // If that fails, show a message with the link to copy
-        toast.info('SMS sharing not supported on this device. Please copy the link manually.');
-        navigator.clipboard.writeText(noteUrl)
-          .then(() => toast.success('Link copied to clipboard'))
-          .catch(() => toast.error('Could not copy link automatically'));
-      }
-    }
-    
-    toast.success('Opening message app...');
-  };
   
   return (
     <div className="container px-4 md:px-6">
@@ -126,27 +63,11 @@ const CreatedPage = () => {
               </div>
               
               <div className="space-y-3">
-                <DropdownMenu open={showShareMenu} onOpenChange={setShowShareMenu}>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      className="w-full" 
-                      onClick={handleShare}
-                    >
-                      <Share className="mr-2 h-4 w-4" />
-                      Share via...
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="center" className="w-56">
-                    <DropdownMenuItem onClick={handleEmailShare}>
-                      <Mail className="mr-2 h-4 w-4" />
-                      <span>Email</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleSMSShare}>
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      <span>SMS Message</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="text-center text-sm text-muted-foreground">
+                  <span className="font-medium">
+                    {notesRemaining}/{totalNotesAllowed} free notes remaining this month
+                  </span>
+                </div>
                 
                 <Button 
                   variant="outline" 

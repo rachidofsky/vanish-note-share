@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, notesRemaining, totalNotesAllowed } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
@@ -20,6 +20,11 @@ export const Header = () => {
         <h1 className="text-xl font-bold text-foreground">OneTimeNote</h1>
       </Link>
       <div className="flex gap-4 items-center">
+        {user && (
+          <div className="text-xs text-muted-foreground hidden sm:block">
+            <span className="font-medium">{notesRemaining}/{totalNotesAllowed}</span> notes left
+          </div>
+        )}
         <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
           Create Note
         </Link>

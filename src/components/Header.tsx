@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { AuthModal } from '@/components/AuthModal';
 
 export const Header = () => {
   const { user, signOut, notesRemaining, totalNotesAllowed } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -16,6 +18,10 @@ export const Header = () => {
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const openAuthModal = () => {
+    setShowAuthModal(true);
   };
 
   return (
@@ -56,7 +62,12 @@ export const Header = () => {
               <span className="hidden sm:inline">Sign Out</span>
             </Button>
           ) : (
-            <Button variant="outline" size="sm" className="ml-2 border-gradient">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-2 border-gradient"
+              onClick={openAuthModal}
+            >
               Sign In
             </Button>
           )}
@@ -94,7 +105,7 @@ export const Header = () => {
               </span>
             </div>
           )}
-          {user && (
+          {user ? (
             <Button
               variant="ghost"
               onClick={() => {
@@ -106,9 +117,23 @@ export const Header = () => {
               <LogOutIcon className="w-4 h-4 mr-2" />
               Sign Out
             </Button>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                openAuthModal();
+              }}
+              className="justify-start px-4"
+            >
+              Sign In
+            </Button>
           )}
         </div>
       )}
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </header>
   );
 }

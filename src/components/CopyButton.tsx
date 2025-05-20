@@ -46,7 +46,7 @@ export const CopyButton = ({
             variant={copied ? "default" : "default"} 
             size={compact ? "icon" : "sm"} 
             onClick={copyToClipboard} 
-            className={`copy-button animate-pulse-slow transition-all duration-900 ${className} ${
+            className={`copy-button animate-pulse-slow transition-all duration-2000 ${className} ${
               copied 
                 ? 'bg-green-500 text-white shadow-neon border-green-500/50' 
                 : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'

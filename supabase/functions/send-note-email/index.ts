@@ -39,7 +39,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Using Resend API key:", resendApiKey ? "API key present" : "No API key found");
     
     // Create a sender display name based on email or default
-    const fromEmail = "notifications@onetimenotesecure.com";
+    const fromEmail = "onboarding@resend.dev"; // Use Resend's default domain until your domain is verified
     const fromName = senderEmail ? `OneTimeNote (via ${senderEmail})` : "OneTimeNote";
 
     // Send the email

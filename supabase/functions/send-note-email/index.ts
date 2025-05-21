@@ -2,8 +2,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
-// Initialize Resend with API key from environment variable
-const resend = new Resend("re_GKbnfJaS_9685qHVujLhfHVgmvNPABLtr");
+// Initialize Resend with API key properly
+const resendApiKey = "re_GKbnfJaS_9685qHVujLhfHVgmvNPABLtr";
+const resend = new Resend(resendApiKey);
 
 // Set up CORS headers for browser requests
 const corsHeaders = {
@@ -33,6 +34,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    console.log("Sending email to:", recipientEmail);
+    console.log("Note link:", noteLink);
+    
     // Create a sender display name based on email or default
     const fromEmail = "notifications@onetimenotesecure.com";
     const fromName = senderEmail ? `OneTimeNote (via ${senderEmail})` : "OneTimeNote";
@@ -73,7 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ success: true, data }),
       { headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Server error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),

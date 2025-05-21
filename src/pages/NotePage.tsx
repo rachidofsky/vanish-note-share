@@ -2,9 +2,15 @@
 import { useParams } from 'react-router-dom';
 import { NoteCard } from '@/components/NoteCard';
 import { AdUnit } from '@/components/AdUnit';
+import { useEffect } from 'react';
 
 const NotePage = () => {
   const { id } = useParams<{ id: string }>();
+  
+  useEffect(() => {
+    // Log when the note page is accessed for debugging
+    console.log("NotePage loaded with ID:", id);
+  }, [id]);
   
   if (!id) {
     return <div>Invalid note ID</div>;

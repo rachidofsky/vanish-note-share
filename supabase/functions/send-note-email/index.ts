@@ -38,6 +38,9 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Note link:", noteLink);
     console.log("Using Resend API key:", resendApiKey ? "API key present" : "No API key found");
     
+    // Ensure the noteLink is properly formatted
+    const formattedLink = noteLink.includes("http") ? noteLink : `https://${noteLink}`;
+    
     // Create a sender display name based on email or default
     const fromEmail = "onboarding@resend.dev"; // Use Resend's default domain until your domain is verified
     const fromName = senderEmail ? `OneTimeNote (via ${senderEmail})` : "OneTimeNote";
@@ -52,7 +55,7 @@ const handler = async (req: Request): Promise<Response> => {
           <h2 style="color: #4f46e5;">You've received a secure note</h2>
           <p>Someone has shared a secure, self-destructing note with you.</p>
           <p style="margin-bottom: 25px;">To view this note, click the button below:</p>
-          <a href="${noteLink}" style="background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Secure Note</a>
+          <a href="${formattedLink}" style="background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Secure Note</a>
           <p style="margin-top: 25px; font-size: 14px; color: #666;">
             <strong>Warning:</strong> This note may be set to self-destruct after viewing. Make sure you're ready to view the contents before clicking the link.
           </p>

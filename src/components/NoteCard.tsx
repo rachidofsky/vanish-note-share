@@ -28,22 +28,28 @@ export const NoteCard = ({ id }: NoteCardProps) => {
     // In a real app, this would be fetching from an API
     const fetchNote = () => {
       try {
+        console.log("Fetching note with ID:", id);
         setIsLoading(true);
         
         const notes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
+        console.log("All notes in storage:", Object.keys(notes));
         const foundNote = notes[id];
         
         if (!foundNote) {
+          console.error("Note not found with ID:", id);
           setError('This note does not exist or has already been viewed.');
           setIsLoading(false);
           return;
         }
+        
+        console.log("Note found:", foundNote.id);
         
         // Set the note content without marking as viewed yet
         setNote(foundNote);
         setIsLoading(false);
         
       } catch (err) {
+        console.error("Error retrieving note:", err);
         setError('An error occurred while retrieving the note.');
         setIsLoading(false);
       }
@@ -82,6 +88,7 @@ export const NoteCard = ({ id }: NoteCardProps) => {
         if (updatedNotes[id]) {
           updatedNotes[id].viewed = true;
           localStorage.setItem('oneTimeNotes', JSON.stringify(updatedNotes));
+          console.log("Note marked as viewed:", id);
         }
         
         // Start countdown for deletion
@@ -96,6 +103,7 @@ export const NoteCard = ({ id }: NoteCardProps) => {
                 localStorage.setItem('oneTimeNotes', JSON.stringify(finalNotes));
                 setNote(null);
                 setError('This note has self-destructed and is no longer available.');
+                console.log("Note deleted:", id);
               }, 500);
               return 0;
             }

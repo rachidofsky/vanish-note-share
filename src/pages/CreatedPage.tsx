@@ -1,4 +1,3 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,7 +40,11 @@ const CreatedPage = () => {
         passwordProtected: notes[id || ''].passwordProtected
       });
     }
-  }, [id]);
+    
+    console.log("Created page loaded for note ID:", id);
+    console.log("Share URL:", shareUrl);
+    
+  }, [id, shareUrl]);
   
   const renderExpiryInfo = () => {
     if (!noteDetails) return null;
@@ -63,6 +66,10 @@ const CreatedPage = () => {
     setIsEmailSending(true);
     
     try {
+      console.log("Sending email to:", emailInput);
+      console.log("Note link:", shareUrl);
+      console.log("Sender email:", user?.email);
+      
       // Call the Supabase Edge Function to send email
       const { data, error } = await supabase.functions.invoke('send-note-email', {
         body: {
@@ -78,6 +85,7 @@ const CreatedPage = () => {
           description: error.message || 'Please try again later.'
         });
       } else {
+        console.log("Email sent successfully:", data);
         toast.success(`Link sent to ${emailInput}`, {
           description: "The secure note link has been emailed successfully."
         });

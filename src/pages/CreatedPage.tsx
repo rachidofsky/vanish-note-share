@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,18 +19,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const CreatedPage = () => {
   const { id } = useParams<{ id: string }>();
   const [noteDetails, setNoteDetails] = useState<any>(null);
   const shareUrl = `${window.location.origin}/note/${id}`;
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
-  const [smsDialogOpen, setSmsDialogOpen] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [phoneInput, setPhoneInput] = useState('');
   const [isEmailSending, setIsEmailSending] = useState(false);
-  const [isSmsSending, setIsSmsSending] = useState(false);
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     // Get note details from localStorage
@@ -43,8 +42,9 @@ const CreatedPage = () => {
     
     console.log("Created page loaded for note ID:", id);
     console.log("Share URL:", shareUrl);
+    console.log("Is mobile device:", isMobile);
     
-  }, [id, shareUrl]);
+  }, [id, shareUrl, isMobile]);
   
   const renderExpiryInfo = () => {
     if (!noteDetails) return null;
@@ -102,40 +102,28 @@ const CreatedPage = () => {
     }
   };
 
-  const handleSendSms = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSmsSending(true);
-    
+  // On mobile, direct SMS sharing via native share API
+  const handleNativeShare = async () => {
     try {
-      // Call the Supabase Edge Function to send SMS
-      const { data, error } = await supabase.functions.invoke('send-note-sms', {
-        body: {
-          phoneNumber: phoneInput,
-          noteLink: shareUrl
-        }
-      });
-      
-      if (error) {
-        console.error('Error sending SMS:', error);
-        toast.error('Failed to send SMS', {
-          description: error.message || 'Please try again later.'
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Secure Note',
+          text: 'I\'ve shared a secure note with you. This note may self-destruct after viewing.',
+          url: shareUrl
         });
+        toast.success('Ready to share via SMS or any app');
       } else {
-        toast.success(`Link sent to ${phoneInput}`, {
-          description: "The secure note link has been sent via SMS."
-        });
-        setSmsDialogOpen(false);
-        setPhoneInput('');
+        toast.error('Sharing not supported on this device');
       }
     } catch (err: any) {
-      console.error('Exception sending SMS:', err);
-      toast.error('Failed to send SMS', {
-        description: err.message || 'Please try again later.'
-      });
-    } finally {
-      setIsSmsSending(false);
+      console.error('Error sharing:', err);
+      if (err.name !== 'AbortError') {
+        toast.error('Failed to share note');
+      }
     }
   };
+  
+  const [emailInput, setEmailInput] = useState('');
   
   return (
     <div className="flex flex-col items-center mx-auto p-4 w-full max-w-2xl">
@@ -189,7 +177,7 @@ const CreatedPage = () => {
               <Link to="/">Create another note</Link>
             </Button>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 w-full gap-2">
+            <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-1"} w-full gap-2`}>
               <Button 
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
                 onClick={() => setEmailDialogOpen(true)}
@@ -197,12 +185,14 @@ const CreatedPage = () => {
                 <Mail className="mr-2 h-4 w-4" /> Send via Email
               </Button>
               
-              <Button 
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                onClick={() => setSmsDialogOpen(true)}
-              >
-                <Phone className="mr-2 h-4 w-4" /> Send via SMS
-              </Button>
+              {isMobile && (
+                <Button 
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                  onClick={handleNativeShare}
+                >
+                  <Phone className="mr-2 h-4 w-4" /> Send via SMS
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
@@ -245,56 +235,6 @@ const CreatedPage = () => {
                 disabled={!emailInput || isEmailSending}
               >
                 {isEmailSending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  'Send Link'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-      
-      {/* SMS Dialog */}
-      <Dialog open={smsDialogOpen} onOpenChange={setSmsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Send Note Link via SMS</DialogTitle>
-            <DialogDescription>
-              Enter the recipient's phone number to send them the secure note link.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSendSms}>
-            <div className="space-y-4 py-2">
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone number</Label>
-                <Input 
-                  id="phone" 
-                  type="tel" 
-                  placeholder="+1 (555) 123-4567"
-                  value={phoneInput}
-                  onChange={(e) => setPhoneInput(e.target.value)}
-                  required
-                  disabled={isSmsSending}
-                />
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Only the link to access the note will be sent. The note content remains secure. Standard SMS rates may apply.
-              </div>
-            </div>
-            <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setSmsDialogOpen(false)} disabled={isSmsSending}>
-                Cancel
-              </Button>
-              <Button 
-                type="submit"
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                disabled={!phoneInput || isSmsSending}
-              >
-                {isSmsSending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Sending...

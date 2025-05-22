@@ -8,11 +8,25 @@ const NotePage = () => {
   const { id } = useParams<{ id: string }>();
   
   useEffect(() => {
-    // Log when the note page is accessed for debugging
+    // Enhanced logging for debugging
     console.log("NotePage loaded with ID:", id);
+    
+    // Check local storage to see if the note exists
+    const notes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
+    console.log("Notes in storage:", Object.keys(notes));
+    
+    if (id) {
+      console.log(`Note ${id} exists in storage:`, !!notes[id]);
+    }
+    
+    // Log device details
+    console.log("User Agent:", navigator.userAgent);
+    console.log("Window Width:", window.innerWidth);
+    console.log("Touch Points:", navigator.maxTouchPoints);
   }, [id]);
   
   if (!id) {
+    console.error("NotePage: No ID provided in URL parameters");
     return <div>Invalid note ID</div>;
   }
   

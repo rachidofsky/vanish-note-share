@@ -16,6 +16,12 @@ export function useIsMobile() {
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
         (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
       
+      // Log values for debugging
+      console.log("Mobile detection - width check:", isMobileByWidth);
+      console.log("Mobile detection - feature check:", isMobileByFeatures);
+      console.log("Window width:", window.innerWidth);
+      console.log("User agent:", navigator.userAgent);
+      
       setIsMobile(isMobileByWidth || isMobileByFeatures);
     };
 

@@ -21,6 +21,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// Define constants for Supabase URLs and keys
+const SUPABASE_URL = "https://njgtazruxbmyitstqsaj.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qZ3RhenJ1eGJteWl0c3Rxc2FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NDYyMjYsImV4cCI6MjA2MzAyMjIyNn0.5Cgc8xcm68F111w-QQGNGxAPkVL_p6MSdC2oUl9qzRw";
+
 const CreatedPage = () => {
   const { id } = useParams<{ id: string }>();
   const [noteDetails, setNoteDetails] = useState<any>(null);
@@ -70,12 +74,12 @@ const CreatedPage = () => {
       console.log("Note link:", shareUrl);
       console.log("Sender email:", user?.email);
       
-      // Enhanced error handling for edge function call
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/send-note-email`, {
+      // Enhanced error handling for edge function call using the constants
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/send-note-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           recipientEmail: emailInput,

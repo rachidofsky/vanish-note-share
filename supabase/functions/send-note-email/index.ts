@@ -25,9 +25,26 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { recipientEmail, noteLink, senderEmail } = await req.json() as SendNoteEmailRequest;
+    console.log("Email function called with method:", req.method);
+    
+    const requestBody = await req.text();
+    console.log("Raw request body:", requestBody);
+    
+    let data;
+    try {
+      data = JSON.parse(requestBody);
+    } catch (parseError) {
+      console.error("Error parsing JSON:", parseError);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+    
+    const { recipientEmail, noteLink, senderEmail } = data as SendNoteEmailRequest;
 
     if (!recipientEmail || !noteLink) {
+      console.error("Missing required fields:", { recipientEmail, noteLink });
       return new Response(
         JSON.stringify({ error: "Recipient email and note link are required" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -46,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
     const fromName = senderEmail ? `OneTimeNote (via ${senderEmail})` : "OneTimeNote";
 
     // Send the email
-    const { data, error } = await resend.emails.send({
+    const { data: emailData, error } = await resend.emails.send({
       from: `${fromName} <${fromEmail}>`,
       to: [recipientEmail],
       subject: "You've received a secure note",
@@ -75,10 +92,10 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log("Email sent successfully:", data);
+    console.log("Email sent successfully:", emailData);
     
     return new Response(
-      JSON.stringify({ success: true, data }),
+      JSON.stringify({ success: true, data: emailData }),
       { headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {

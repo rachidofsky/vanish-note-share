@@ -70,28 +70,33 @@ const CreatedPage = () => {
       console.log("Note link:", shareUrl);
       console.log("Sender email:", user?.email);
       
-      // Call the Supabase Edge Function to send email
-      const { data, error } = await supabase.functions.invoke('send-note-email', {
-        body: {
+      // Enhanced error handling for edge function call
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/send-note-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.supabaseKey}`,
+        },
+        body: JSON.stringify({
           recipientEmail: emailInput,
           noteLink: shareUrl,
           senderEmail: user?.email
-        }
+        })
       });
       
-      if (error) {
-        console.error('Error sending email:', error);
-        toast.error('Failed to send email', {
-          description: error.message || 'Please try again later.'
-        });
-      } else {
-        console.log("Email sent successfully:", data);
-        toast.success(`Link sent to ${emailInput}`, {
-          description: "The secure note link has been emailed successfully."
-        });
-        setEmailDialogOpen(false);
-        setEmailInput('');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send email');
       }
+      
+      const data = await response.json();
+      console.log("Email sent successfully:", data);
+      
+      toast.success(`Link sent to ${emailInput}`, {
+        description: "The secure note link has been emailed successfully."
+      });
+      setEmailDialogOpen(false);
+      setEmailInput('');
     } catch (err: any) {
       console.error('Exception sending email:', err);
       toast.error('Failed to send email', {

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,6 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface NoteFormProps {
   onUnauthenticatedAction?: () => boolean;
@@ -38,6 +38,7 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
   
   const navigate = useNavigate();
   const { user, notesRemaining, decrementNotesRemaining, totalNotesAllowed } = useAuth();
+  const isMobile = useIsMobile();
 
   // Calculate character count and limits
   const maxChars = 5000;
@@ -95,10 +96,17 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
     setLoading(true);
     setShowConfirmation(false);
     
+    // Add additional logging for mobile devices
+    if (isMobile) {
+      console.log("Creating note on mobile device");
+      console.log("LocalStorage availability check:", typeof localStorage !== 'undefined' && localStorage !== null);
+    }
+    
     // In a real app, this would send data to a server
     setTimeout(() => {
       try {
         const noteId = uuidv4();
+        console.log("Generated note ID:", noteId);
         
         // Store note in localStorage (in a real app, this would be encrypted and stored in a database)
         const note = {
@@ -112,10 +120,62 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
           password: passwordProtected ? password : null
         };
         
-        // Store in localStorage
-        const notes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
-        notes[noteId] = note;
-        localStorage.setItem('oneTimeNotes', JSON.stringify(notes));
+        // Log note details for debugging (excluding sensitive content)
+        console.log("Creating note:", {
+          id: noteId,
+          expiryType,
+          passwordProtected,
+          contentLength: noteContent.length
+        });
+        
+        // Enhanced error handling for localStorage
+        try {
+          // Check if localStorage exists and is accessible
+          if (typeof localStorage === 'undefined' || localStorage === null) {
+            throw new Error("localStorage is not available");
+          }
+          
+          // Read existing notes first
+          let notes = {};
+          const existingNotes = localStorage.getItem('oneTimeNotes');
+          if (existingNotes) {
+            try {
+              notes = JSON.parse(existingNotes);
+              console.log("Existing notes count:", Object.keys(notes).length);
+            } catch (parseError) {
+              console.error("Error parsing existing notes, creating new storage:", parseError);
+              // If parsing fails, start with empty object
+              notes = {};
+            }
+          } else {
+            console.log("No existing notes found, creating new storage");
+          }
+          
+          // Store the new note
+          notes[noteId] = note;
+          localStorage.setItem('oneTimeNotes', JSON.stringify(notes));
+          
+          // Verify storage succeeded
+          const verifyStorage = localStorage.getItem('oneTimeNotes');
+          if (!verifyStorage) {
+            throw new Error("Failed to verify note storage");
+          }
+          
+          const parsedVerify = JSON.parse(verifyStorage);
+          if (!parsedVerify[noteId]) {
+            throw new Error("Note was not properly stored");
+          }
+          
+          console.log("Note successfully stored, note ID exists in storage:", !!parsedVerify[noteId]);
+          
+        } catch (storageError) {
+          console.error("Storage operation failed:", storageError);
+          toast.error("Failed to store note", {
+            description: "There was a problem with your browser's storage"
+          });
+          setLoading(false);
+          return;
+        }
         
         // Decrement the user's remaining notes count
         decrementNotesRemaining();
@@ -127,8 +187,8 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
         // Redirect to the success page
         navigate(`/created/${noteId}`);
       } catch (error) {
+        console.error("Error creating note:", error);
         toast.error('Failed to create note');
-      } finally {
         setLoading(false);
       }
     }, 1000);
@@ -189,6 +249,16 @@ export const NoteForm = ({ onUnauthenticatedAction }: NoteFormProps) => {
               {notesRemaining === 0 
                 ? "You've used all your free notes for this month." 
                 : `You have ${notesRemaining} note${notesRemaining === 1 ? '' : 's'} remaining this month.`}
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {/* Show mobile device indicator for debugging */}
+        {isMobile && import.meta.env.DEV && (
+          <Alert variant="default" className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <Info className="h-4 w-4 text-blue-500" />
+            <AlertDescription>
+              Mobile device detected - notes will be stored using local browser storage.
             </AlertDescription>
           </Alert>
         )}

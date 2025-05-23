@@ -11,6 +11,7 @@ const NotePage = () => {
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string | null>(null);
+  const [noteExists, setNoteExists] = useState<boolean | null>(null);
   
   useEffect(() => {
     // Enhanced logging for debugging
@@ -31,7 +32,7 @@ const NotePage = () => {
     console.log("Local Storage Available:", hasLocalStorage);
     
     // Detailed debug info
-    const debugText = `Device: ${isMobile ? 'Mobile' : 'Desktop'}, Width: ${windowWidth}px, Local Storage: ${hasLocalStorage ? 'Available' : 'Unavailable'}`;
+    const debugText = `Device: ${isMobile ? 'Mobile' : 'Desktop'}, Width: ${windowWidth}px, Local Storage: ${hasLocalStorage ? 'Available' : 'Unavailable'}, UserAgent: ${userAgent.substring(0, 50)}...`;
     setDebugInfo(debugText);
     
     if (!id) {
@@ -56,32 +57,79 @@ const NotePage = () => {
         return;
       }
       
-      // Check local storage to see if the note exists
-      const notes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
-      console.log("Notes in storage:", Object.keys(notes));
-      
-      const noteExists = !!notes[id];
-      console.log(`Note ${id} exists in storage:`, noteExists);
-      
-      if (!noteExists) {
-        const errorMsg = "The note may have been deleted or already viewed";
-        setErrorMessage(errorMsg);
-        setHasError(true);
-        toast.error("Note not found", {
-          description: errorMsg
-        });
+      // More detailed localStorage access testing
+      try {
+        // Test setting and getting from localStorage
+        localStorage.setItem('test-storage', 'test');
+        const testValue = localStorage.getItem('test-storage');
+        console.log("Local storage test:", testValue === 'test' ? 'Successful' : 'Failed');
+        localStorage.removeItem('test-storage');
+      } catch (storageErr) {
+        console.error("Local storage access test failed:", storageErr);
+        setDebugInfo(prev => `${prev}\nStorage access test failed: ${storageErr instanceof Error ? storageErr.message : 'Unknown error'}`);
       }
       
-      // Additional debugging for mobile
-      if (isMobile) {
-        console.log("Mobile device detected, notes data structure:", 
-          Object.keys(notes).length > 0 ? "Notes exist" : "No notes in storage");
+      // Check local storage to see if the note exists
+      console.log("Checking localStorage for notes...");
+      const notesJson = localStorage.getItem('oneTimeNotes');
+      console.log("Raw notes from storage:", notesJson ? `Found (length: ${notesJson.length})` : 'Not found');
+      
+      if (!notesJson) {
+        console.log("No notes found in localStorage");
+        setErrorMessage("No notes found in storage");
+        setHasError(true);
+        setNoteExists(false);
+        toast.error("Note not found");
+        return;
+      }
+      
+      try {
+        const notes = JSON.parse(notesJson);
+        console.log("Notes in storage:", Object.keys(notes).length, "notes found");
+        console.log("Available note IDs:", Object.keys(notes).join(", "));
+        
+        const noteExists = !!notes[id];
+        setNoteExists(noteExists);
+        console.log(`Note ${id} exists in storage:`, noteExists);
+        
+        if (!noteExists) {
+          const errorMsg = "The note may have been deleted or already viewed";
+          setErrorMessage(errorMsg);
+          setHasError(true);
+          toast.error("Note not found", {
+            description: errorMsg
+          });
+        }
+        
+        // Additional debugging for mobile
+        if (isMobile) {
+          console.log("Mobile device detected");
+          console.log("Notes data structure:", 
+            Object.keys(notes).length > 0 ? "Notes exist" : "No notes in storage");
+            
+          // For the requested note ID, log details if it exists
+          if (notes[id]) {
+            console.log("Found note details:", {
+              id: notes[id].id,
+              passwordProtected: !!notes[id].passwordProtected,
+              expiryType: notes[id].expiryType || 'unknown',
+              viewed: !!notes[id].viewed
+            });
+          }
+        }
+      } catch (parseError) {
+        console.error("Error parsing notes from localStorage:", parseError);
+        setErrorMessage("Error reading note data (invalid format)");
+        setHasError(true);
+        setDebugInfo(prev => `${prev}\nParse error: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+        toast.error("Error loading note data");
       }
       
     } catch (err) {
       console.error("Error checking note existence:", err);
       setErrorMessage("Error accessing note data");
       setHasError(true);
+      setDebugInfo(prev => `${prev}\nError: ${err instanceof Error ? err.message : 'Unknown error'}`);
       toast.error("Error loading note");
     } finally {
       setIsLoading(false);
@@ -104,7 +152,8 @@ const NotePage = () => {
         id={id} 
         initialErrorState={hasError} 
         errorMessage={errorMessage} 
-        debugInfo={debugInfo} 
+        debugInfo={debugInfo}
+        noteExists={noteExists}
       />
       
       {/* Ad below the note card - this will show briefly before self-destruction */}

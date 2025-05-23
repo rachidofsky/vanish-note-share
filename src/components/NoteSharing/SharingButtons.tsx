@@ -58,14 +58,34 @@ export const SharingButtons = ({ isMobile, shareUrl, onEmailClick }: SharingButt
     }
   };
 
-  // Handle WhatsApp sharing
+  // Handle WhatsApp sharing with improved compatibility
   const handleWhatsAppShare = () => {
     try {
       console.log("Attempting WhatsApp share with URL:", shareUrl);
+      
+      // Use the direct WhatsApp API for more reliable sharing
       const encodedMessage = encodeURIComponent(`I've shared a secure note with you. This note may self-destruct after viewing: ${shareUrl}`);
       const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+      
+      // Log the generated WhatsApp URL for debugging
       console.log("WhatsApp share URL:", whatsappUrl);
-      window.open(whatsappUrl, '_blank');
+      
+      // On mobile, try to use the app directly
+      if (isMobile) {
+        // For iOS devices
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (isIOS) {
+          // iOS sometimes works better with a direct timeout approach
+          window.location.href = whatsappUrl;
+        } else {
+          // For Android and other devices
+          window.open(whatsappUrl, '_blank');
+        }
+      } else {
+        // Desktop flow
+        window.open(whatsappUrl, '_blank');
+      }
+      
       toast.success('Opening WhatsApp');
     } catch (err) {
       console.error("WhatsApp sharing error:", err);
@@ -81,14 +101,28 @@ export const SharingButtons = ({ isMobile, shareUrl, onEmailClick }: SharingButt
       
       // iOS uses different SMS URI format
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      // Add an empty recipient field for iOS
       const smsUri = isIOS ? `sms:&body=${encodedMessage}` : `sms:?body=${encodedMessage}`;
       
       console.log("SMS URI:", smsUri);
+      console.log("Is iOS:", isIOS);
+      
+      // Use window.location.href for more reliable SMS app launching
       window.location.href = smsUri;
       toast.success('Opening SMS app');
     } catch (err) {
       console.error("SMS sharing error:", err);
       toast.error("Could not open SMS app");
+      
+      // Alternative approach for some mobile browsers
+      try {
+        const textMsg = `I've shared a secure note with you: ${shareUrl}`;
+        const fallbackUri = `sms:?&body=${encodeURIComponent(textMsg)}`;
+        console.log("Trying fallback SMS approach:", fallbackUri);
+        window.open(fallbackUri, '_blank');
+      } catch (fallbackErr) {
+        console.error("SMS fallback also failed:", fallbackErr);
+      }
     }
   };
 

@@ -14,6 +14,14 @@ export const SharingButtons = ({ isMobile, shareUrl, onEmailClick }: SharingButt
   // On mobile, direct SMS sharing via native share API
   const handleNativeShare = async () => {
     try {
+      // Log detailed share link info for debugging
+      console.log("Attempting to share URL:", shareUrl);
+      console.log("Full URL information:", {
+        origin: window.location.origin,
+        fullShareUrl: shareUrl,
+        urlLength: shareUrl.length
+      });
+      
       if (navigator.share) {
         await navigator.share({
           title: 'Secure Note',
@@ -21,29 +29,67 @@ export const SharingButtons = ({ isMobile, shareUrl, onEmailClick }: SharingButt
           url: shareUrl
         });
         toast.success('Ready to share via SMS or any app');
+        console.log("Native sharing successfully triggered");
       } else {
         // Fallback for browsers that don't support sharing
-        toast.error('Sharing not supported on this device');
         console.log("Native sharing not supported on this device");
+        toast.error('Sharing not supported on this device');
         
         // Try to open SMS on mobile anyway as a fallback
         if (isMobile) {
+          console.log("Attempting SMS fallback for mobile");
           const encodedMessage = encodeURIComponent(`I've shared a secure note with you: ${shareUrl}`);
-          window.location.href = `sms:?body=${encodedMessage}`;
+          try {
+            window.location.href = `sms:?body=${encodedMessage}`;
+            console.log("SMS fallback launched");
+          } catch (err) {
+            console.error("SMS fallback failed:", err);
+            toast.error("Could not launch SMS app");
+          }
         }
       }
     } catch (err: any) {
-      console.error('Error sharing:', err);
+      console.error('Error during share operation:', err);
       if (err.name !== 'AbortError') {
         toast.error('Failed to share note');
+      } else {
+        console.log("Share dialog was closed by user");
       }
     }
   };
 
   // Handle WhatsApp sharing
   const handleWhatsAppShare = () => {
-    const encodedMessage = encodeURIComponent(`I've shared a secure note with you. This note may self-destruct after viewing: ${shareUrl}`);
-    window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+    try {
+      console.log("Attempting WhatsApp share with URL:", shareUrl);
+      const encodedMessage = encodeURIComponent(`I've shared a secure note with you. This note may self-destruct after viewing: ${shareUrl}`);
+      const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+      console.log("WhatsApp share URL:", whatsappUrl);
+      window.open(whatsappUrl, '_blank');
+      toast.success('Opening WhatsApp');
+    } catch (err) {
+      console.error("WhatsApp sharing error:", err);
+      toast.error("Could not open WhatsApp");
+    }
+  };
+
+  // Handle SMS sharing directly with a special handler for iOS
+  const handleSmsShare = () => {
+    try {
+      console.log("Attempting direct SMS share");
+      const encodedMessage = encodeURIComponent(`I've shared a secure note with you: ${shareUrl}`);
+      
+      // iOS uses different SMS URI format
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const smsUri = isIOS ? `sms:&body=${encodedMessage}` : `sms:?body=${encodedMessage}`;
+      
+      console.log("SMS URI:", smsUri);
+      window.location.href = smsUri;
+      toast.success('Opening SMS app');
+    } catch (err) {
+      console.error("SMS sharing error:", err);
+      toast.error("Could not open SMS app");
+    }
   };
 
   return (
@@ -65,20 +111,38 @@ export const SharingButtons = ({ isMobile, shareUrl, onEmailClick }: SharingButt
         </Button>
         
         {isMobile && (
+          <>
+            <Button 
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              onClick={handleNativeShare}
+            >
+              <Share2 className="mr-2 h-4 w-4" /> Share
+            </Button>
+            
+            <Button 
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+              onClick={handleWhatsAppShare}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp
+            </Button>
+            
+            <Button 
+              className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white"
+              onClick={handleSmsShare}
+            >
+              <Phone className="mr-2 h-4 w-4" /> SMS
+            </Button>
+          </>
+        )}
+        
+        {!isMobile && (
           <Button 
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-            onClick={handleNativeShare}
+            className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+            onClick={handleWhatsAppShare}
           >
-            <Share2 className="mr-2 h-4 w-4" /> Share
+            <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp
           </Button>
         )}
-
-        <Button 
-          className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-          onClick={handleWhatsAppShare}
-        >
-          <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp
-        </Button>
       </div>
     </div>
   );

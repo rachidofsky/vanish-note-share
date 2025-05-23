@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CopyButton } from './CopyButton';
@@ -7,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Shield, Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface NoteCardProps {
   id: string;
@@ -23,6 +23,7 @@ export const NoteCard = ({ id }: NoteCardProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string>('');
   
   useEffect(() => {
     // In a real app, this would be fetching from an API
@@ -31,14 +32,31 @@ export const NoteCard = ({ id }: NoteCardProps) => {
         console.log("Fetching note with ID:", id);
         setIsLoading(true);
         
+        // Gather debug information
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const deviceInfo = `Device: ${isMobile ? 'Mobile' : 'Desktop'}, UA: ${navigator.userAgent.substring(0, 100)}...`;
+        
         const notes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
         console.log("All notes in storage:", Object.keys(notes));
+        const debugText = `Notes in storage: ${Object.keys(notes).length}. ${deviceInfo}`;
+        setDebugInfo(debugText);
+        
         const foundNote = notes[id];
         
         if (!foundNote) {
           console.error("Note not found with ID:", id);
           setError('This note does not exist or has already been viewed.');
           setIsLoading(false);
+          
+          // Additional debug logging for troubleshooting
+          console.log("Local Storage Dump:", JSON.stringify({
+            storageAvailable: !!localStorage,
+            notesKeyExists: !!localStorage.getItem('oneTimeNotes'),
+            noteObjectSize: JSON.stringify(notes).length,
+            noteIds: Object.keys(notes),
+            requestedId: id
+          }));
+          
           return;
         }
         
@@ -52,6 +70,12 @@ export const NoteCard = ({ id }: NoteCardProps) => {
         console.error("Error retrieving note:", err);
         setError('An error occurred while retrieving the note.');
         setIsLoading(false);
+        
+        // Log detailed error for debugging
+        if (err instanceof Error) {
+          console.error("Error details:", err.message, err.stack);
+          setDebugInfo(`Error: ${err.message}`);
+        }
       }
     };
     
@@ -83,33 +107,47 @@ export const NoteCard = ({ id }: NoteCardProps) => {
       setTimeout(() => {
         setHasReadNote(true);
         
-        // Mark as viewed in localStorage
-        const updatedNotes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
-        if (updatedNotes[id]) {
-          updatedNotes[id].viewed = true;
-          localStorage.setItem('oneTimeNotes', JSON.stringify(updatedNotes));
-          console.log("Note marked as viewed:", id);
+        try {
+          // Mark as viewed in localStorage
+          const updatedNotes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
+          if (updatedNotes[id]) {
+            updatedNotes[id].viewed = true;
+            localStorage.setItem('oneTimeNotes', JSON.stringify(updatedNotes));
+            console.log("Note marked as viewed:", id);
+            
+            // Start countdown for deletion
+            const countdownTimer = setInterval(() => {
+              setCountdown(prev => {
+                if (prev <= 1) {
+                  clearInterval(countdownTimer);
+                  // Delete note after countdown
+                  setTimeout(() => {
+                    try {
+                      const finalNotes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
+                      delete finalNotes[id];
+                      localStorage.setItem('oneTimeNotes', JSON.stringify(finalNotes));
+                      setNote(null);
+                      setError('This note has self-destructed and is no longer available.');
+                      console.log("Note deleted:", id);
+                    } catch (err) {
+                      console.error("Error deleting note:", err);
+                      toast.error("There was an issue deleting the note");
+                    }
+                  }, 500);
+                  return 0;
+                }
+                return prev - 1;
+              });
+            }, 1000);
+          } else {
+            console.error("Note not found for marking as viewed:", id);
+            setDebugInfo(prev => `${prev}\nError: Note not found for marking as viewed`);
+          }
+        } catch (err) {
+          console.error("Error marking note as viewed:", err);
+          toast.error("There was an issue accessing the note");
+          setDebugInfo(prev => `${prev}\nError marking as viewed: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
-        
-        // Start countdown for deletion
-        const countdownTimer = setInterval(() => {
-          setCountdown(prev => {
-            if (prev <= 1) {
-              clearInterval(countdownTimer);
-              // Delete note after countdown
-              setTimeout(() => {
-                const finalNotes = JSON.parse(localStorage.getItem('oneTimeNotes') || '{}');
-                delete finalNotes[id];
-                localStorage.setItem('oneTimeNotes', JSON.stringify(finalNotes));
-                setNote(null);
-                setError('This note has self-destructed and is no longer available.');
-                console.log("Note deleted:", id);
-              }, 500);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
       }, 2000); // Wait 2 seconds before marking as viewed
     } else if (note && note.viewed) {
       // If already viewed but still in storage (during countdown period),
@@ -150,6 +188,23 @@ export const NoteCard = ({ id }: NoteCardProps) => {
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
+          
+          {/* Debug information - only shown in development */}
+          {import.meta.env.DEV && debugInfo && (
+            <div className="mt-4 p-2 border border-dashed border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 rounded text-xs overflow-auto">
+              <p className="font-mono break-words whitespace-pre-wrap">Debug: {debugInfo}</p>
+            </div>
+          )}
+          
+          <div className="mt-4">
+            <Button 
+              variant="outline"
+              className="w-full"
+              asChild
+            >
+              <a href="/">Create a new note</a>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

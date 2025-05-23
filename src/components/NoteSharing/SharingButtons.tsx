@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Mail, Phone } from 'lucide-react';
+import { Mail, Phone, Share2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -22,7 +22,15 @@ export const SharingButtons = ({ isMobile, shareUrl, onEmailClick }: SharingButt
         });
         toast.success('Ready to share via SMS or any app');
       } else {
+        // Fallback for browsers that don't support sharing
         toast.error('Sharing not supported on this device');
+        console.log("Native sharing not supported on this device");
+        
+        // Try to open SMS on mobile anyway as a fallback
+        if (isMobile) {
+          const encodedMessage = encodeURIComponent(`I've shared a secure note with you: ${shareUrl}`);
+          window.location.href = `sms:?body=${encodedMessage}`;
+        }
       }
     } catch (err: any) {
       console.error('Error sharing:', err);
@@ -30,6 +38,12 @@ export const SharingButtons = ({ isMobile, shareUrl, onEmailClick }: SharingButt
         toast.error('Failed to share note');
       }
     }
+  };
+
+  // Handle WhatsApp sharing
+  const handleWhatsAppShare = () => {
+    const encodedMessage = encodeURIComponent(`I've shared a secure note with you. This note may self-destruct after viewing: ${shareUrl}`);
+    window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
   };
 
   return (
@@ -55,9 +69,16 @@ export const SharingButtons = ({ isMobile, shareUrl, onEmailClick }: SharingButt
             className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
             onClick={handleNativeShare}
           >
-            <Phone className="mr-2 h-4 w-4" /> Send via SMS
+            <Share2 className="mr-2 h-4 w-4" /> Share
           </Button>
         )}
+
+        <Button 
+          className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+          onClick={handleWhatsAppShare}
+        >
+          <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp
+        </Button>
       </div>
     </div>
   );

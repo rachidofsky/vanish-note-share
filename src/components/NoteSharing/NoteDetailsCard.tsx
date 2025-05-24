@@ -1,11 +1,8 @@
-import { Check, Clock, Lock, AlertTriangle, Info, Phone } from 'lucide-react';
+
+import { Check, Clock, Lock, AlertTriangle, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CopyButton } from '@/components/CopyButton';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
 
 interface NoteDetailsProps {
   noteDetails: {
@@ -18,9 +15,6 @@ interface NoteDetailsProps {
 
 export const NoteDetailsCard = ({ noteDetails, shareUrl, debugInfo }: NoteDetailsProps) => {
   const isMobile = useIsMobile();
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [isSending, setIsSending] = useState(false);
-  const [showSmsForm, setShowSmsForm] = useState(false);
   
   // Generate ready page URL instead of direct note URL
   const readyUrl = shareUrl.replace('/note/', '/ready/');
@@ -37,51 +31,6 @@ export const NoteDetailsCard = ({ noteDetails, shareUrl, debugInfo }: NoteDetail
         return 'This note will be permanently deleted after 24 hours.';
       default:
         return 'This note will self-destruct after being viewed.';
-    }
-  };
-
-  const handleSendSms = async () => {
-    // Validate phone number format
-    if (!phoneNumber.trim() || (phoneNumber.trim().replace(/\D/g, '').length < 10)) {
-      toast.error('Please enter a valid phone number');
-      return;
-    }
-
-    setIsSending(true);
-    try {
-      // Format the phone number (simple formatting, could be enhanced)
-      const formattedPhoneNumber = phoneNumber.startsWith('+') 
-        ? phoneNumber 
-        : `+1${phoneNumber.replace(/\D/g, '')}`;
-      
-      console.log(`Attempting to send SMS to: ${formattedPhoneNumber}`);
-      
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-note-sms`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          phoneNumber: formattedPhoneNumber,
-          noteLink: readyUrl // Use ready URL instead of direct note URL
-        })
-      });
-
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
-        toast.success('SMS sent successfully!');
-        setShowSmsForm(false);
-        setPhoneNumber('');
-      } else {
-        throw new Error(data.error || 'Failed to send SMS');
-      }
-    } catch (error) {
-      console.error('SMS sending error:', error);
-      toast.error(`Failed to send SMS: ${error.message}`);
-    } finally {
-      setIsSending(false);
     }
   };
 
@@ -104,51 +53,6 @@ export const NoteDetailsCard = ({ noteDetails, shareUrl, debugInfo }: NoteDetail
             <div className="truncate text-sm">{readyUrl}</div>
             <CopyButton textToCopy={readyUrl} compact={true} />
           </div>
-          
-          {!showSmsForm ? (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2 text-xs" 
-              onClick={() => setShowSmsForm(true)}
-            >
-              <Phone className="h-3 w-3 mr-1" /> Send via SMS
-            </Button>
-          ) : (
-            <div className="mt-3 p-3 border border-border rounded-md">
-              <div className="text-sm font-medium mb-2">Send via SMS</div>
-              <Textarea
-                placeholder="Enter phone number (e.g. +1 555 123 4567)"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="mb-2 text-sm"
-                rows={1}
-              />
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  onClick={handleSendSms} 
-                  disabled={isSending}
-                  className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white"
-                >
-                  {isSending ? 'Sending...' : 'Send SMS'}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => {
-                    setShowSmsForm(false);
-                    setPhoneNumber('');
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Standard message rates may apply. The recipient will only receive the secure note link.
-              </p>
-            </div>
-          )}
           
           <div className="mt-4 text-xs text-muted-foreground space-y-2">
             <div className="flex items-start gap-2">
@@ -177,7 +81,7 @@ export const NoteDetailsCard = ({ noteDetails, shareUrl, debugInfo }: NoteDetail
               <div className="flex items-start gap-2">
                 <Info className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-500" />
                 <div className="text-xs text-blue-700 dark:text-blue-300">
-                  <strong>For mobile sharing:</strong> To ensure the recipient can access this note properly, we recommend using the share buttons below instead of copying the link manually.
+                  <strong>For mobile sharing:</strong> Copy the link above and share it through your preferred messaging app.
                 </div>
               </div>
             </div>

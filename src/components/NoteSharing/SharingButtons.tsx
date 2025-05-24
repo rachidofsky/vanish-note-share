@@ -10,6 +10,22 @@ interface SharingButtonsProps {
 }
 
 export const SharingButtons = ({ isMobile, shareUrl, onEmailClick }: SharingButtonsProps) => {
+  // On mobile, show no sharing buttons at all
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-4 pt-2">
+        <Button 
+          variant="outline" 
+          className="w-full" 
+          asChild
+        >
+          <Link to="/">Create another note</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  // On desktop, show email and create another note buttons
   return (
     <div className="flex flex-col sm:flex-row gap-4 pt-2">
       <Button 

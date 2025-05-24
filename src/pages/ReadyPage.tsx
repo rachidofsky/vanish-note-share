@@ -15,6 +15,19 @@ const ReadyPage = () => {
   const [noteExists, setNoteExists] = useState(false);
 
   useEffect(() => {
+    // Add viewport meta tag to prevent scaling on mobile
+    if (isMobile) {
+      const existingViewport = document.querySelector('meta[name="viewport"]');
+      if (existingViewport) {
+        existingViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+      } else {
+        const viewportMeta = document.createElement('meta');
+        viewportMeta.name = 'viewport';
+        viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+        document.head.appendChild(viewportMeta);
+      }
+    }
+
     // Check if the note exists in localStorage
     const checkNoteExists = () => {
       try {
@@ -35,7 +48,7 @@ const ReadyPage = () => {
     } else {
       setIsLoading(false);
     }
-  }, [id]);
+  }, [id, isMobile]);
 
   const handleProceed = () => {
     if (id) {

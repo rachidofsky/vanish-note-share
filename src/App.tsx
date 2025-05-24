@@ -9,6 +9,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/HomePage";
 import NotePage from "./pages/NotePage";
+import ReadyPage from "./pages/ReadyPage";
 import CreatedPage from "./pages/CreatedPage";
 import AboutPage from "./pages/AboutPage";
 import PrivacyPage from "./pages/PrivacyPage";
@@ -30,6 +31,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<MainLayout />}>
                 <Route index element={<HomePage />} />
+                <Route path="ready/:id" element={<ReadyPage />} />
                 <Route path="note/:id" element={<NotePage />} />
                 <Route path="created/:id" element={<CreatedPage />} />
                 <Route path="about" element={<AboutPage />} />

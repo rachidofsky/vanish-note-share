@@ -1,4 +1,3 @@
-
 import { Check, Clock, Lock, AlertTriangle, Info, Phone } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CopyButton } from '@/components/CopyButton';
@@ -22,6 +21,9 @@ export const NoteDetailsCard = ({ noteDetails, shareUrl, debugInfo }: NoteDetail
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [showSmsForm, setShowSmsForm] = useState(false);
+  
+  // Generate ready page URL instead of direct note URL
+  const readyUrl = shareUrl.replace('/note/', '/ready/');
   
   const renderExpiryInfo = () => {
     if (!noteDetails) return 'This note will self-destruct after being viewed.';
@@ -62,7 +64,7 @@ export const NoteDetailsCard = ({ noteDetails, shareUrl, debugInfo }: NoteDetail
         },
         body: JSON.stringify({
           phoneNumber: formattedPhoneNumber,
-          noteLink: shareUrl
+          noteLink: readyUrl // Use ready URL instead of direct note URL
         })
       });
 
@@ -99,8 +101,8 @@ export const NoteDetailsCard = ({ noteDetails, shareUrl, debugInfo }: NoteDetail
         <div className="bg-muted/50 rounded-lg p-4">
           <div className="text-sm text-muted-foreground mb-2 font-medium">Note link:</div>
           <div className="flex items-center gap-2 bg-accent/40 border border-primary/10 rounded-md px-3 py-2 overflow-hidden">
-            <div className="truncate text-sm">{shareUrl}</div>
-            <CopyButton textToCopy={shareUrl} compact={true} />
+            <div className="truncate text-sm">{readyUrl}</div>
+            <CopyButton textToCopy={readyUrl} compact={true} />
           </div>
           
           {!showSmsForm ? (
